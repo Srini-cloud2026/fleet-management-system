@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body>
@@ -1109,6 +1112,8 @@
                 </div>
                 <!-- Live GPS Information -->
                 <div id="modal-gps-info"></div>
+                <!-- Movement Track Map -->
+                <div id="vehicle-track-map" style="height: 300px; width: 100%; margin-top: 20px; border-radius: 12px; border: 1px solid var(--border); display: none;"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeVehicleModal()">Close</button>
