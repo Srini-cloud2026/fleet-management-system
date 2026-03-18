@@ -1,7 +1,7 @@
 // Supabase Config
 const SUPABASE_URL = 'https://tcoyxzgkvnutkwavfvgp.supabase.co';
 // Use Environment Variable for the Secret Key (Security Best Practice)
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || 'sb_secret_D-_wkEZe5WuGK262cbk3GA_RG-DOwn8';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || 'sb_secret_sgQZySDIfsvonSuccVwjAA_ztQ-dTmO';
 
 async function logToSupabase(data) {
     if (!Array.isArray(data)) return;
