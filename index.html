@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body>
@@ -98,9 +101,9 @@
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section-title">Overview</div>
-                <a class="nav-item active" onclick="showSection('dashboard')" id="nav-dashboard">
-                    <i class="nav-icon fas fa-th-large"></i>
-                    <span>Dashboard</span>
+                <a class="nav-item active" onclick="showSection('dashboard-vehicle')" id="nav-dashboard-vehicle">
+                    <i class="nav-icon fas fa-truck-loading"></i>
+                    <span>Vehicle Dashboard</span>
                 </a>
 
                 <div class="nav-section-title">Fleet Operations</div>
@@ -111,11 +114,15 @@
                 <a class="nav-item" onclick="showSection('fleet')" id="nav-fleet">
                     <i class="nav-icon fas fa-truck"></i>
                     <span>Asset Management</span>
-                    <span class="nav-badge">48</span>
+                    <span class="nav-badge badge-vehicle-count">190</span>
                 </a>
                 <a class="nav-item" onclick="showSection('manpower')" id="nav-manpower">
                     <i class="nav-icon fas fa-users"></i>
                     <span>Manpower</span>
+                </a>
+                <a class="nav-item" onclick="showSection('tracker')" id="nav-tracker">
+                    <i class="nav-icon fas fa-map-marked-alt"></i>
+                    <span>Live Tracker</span>
                 </a>
                 <a class="nav-item" onclick="showSection('attendance')" id="nav-attendance">
                     <i class="nav-icon fas fa-clock"></i>
@@ -135,6 +142,10 @@
                     <i class="nav-icon fas fa-file-invoice-dollar"></i>
                     <span>Invoices</span>
                     <span class="nav-badge">5</span>
+                </a>
+                <a class="nav-item" onclick="showSection('dashboard-finance')" id="nav-dashboard-finance">
+                    <i class="nav-icon fas fa-chart-line"></i>
+                    <span>Finance Dashboard</span>
                 </a>
                 <a class="nav-item" onclick="showSection('reports')" id="nav-reports">
                     <i class="nav-icon fas fa-chart-pie"></i>
@@ -167,84 +178,40 @@
             </header>
 
             <div class="page-content">
-
-                <!-- ==================== DASHBOARD ==================== -->
-                <section class="page-section active" id="section-dashboard">
+                <!-- ==================== VEHICLE DASHBOARD ==================== -->
+                <section class="page-section active" id="section-dashboard-vehicle">
                     <div class="kpi-grid">
-                        <div class="kpi-card blue">
+                        <div class="kpi-card blue" onclick="showKPIBreakdown('total-vehicles')">
                             <div class="kpi-header">
                                 <div class="kpi-icon blue"><i class="fas fa-truck"></i></div>
-                                <span class="kpi-trend up">↑ 3</span>
                             </div>
-                            <div class="kpi-value">48</div>
+                            <div class="kpi-value kpi-total-vehicles">--</div>
                             <div class="kpi-label">Total Vehicles</div>
                         </div>
-                        <div class="kpi-card green">
+                        <div class="kpi-card green" onclick="showKPIBreakdown('active-vehicles')">
                             <div class="kpi-header">
                                 <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
-                                <span class="kpi-trend up">↑ 2</span>
                             </div>
-                            <div class="kpi-value">41</div>
+                            <div class="kpi-value kpi-active-vehicles">--</div>
                             <div class="kpi-label">Vehicles Active</div>
                         </div>
-                        <div class="kpi-card orange">
+                        <div class="kpi-card orange" onclick="showKPIBreakdown('total-manpower')">
                             <div class="kpi-header">
                                 <div class="kpi-icon orange"><i class="fas fa-users"></i></div>
                             </div>
-                            <div class="kpi-value">62</div>
-                            <div class="kpi-label">Total Drivers & Helpers</div>
+                            <div class="kpi-value kpi-total-manpower">--</div>
+                            <div class="kpi-label">Total Manpower</div>
                         </div>
-                        <div class="kpi-card purple">
-                            <div class="kpi-header">
-                                <div class="kpi-icon purple"><i class="fas fa-route"></i></div>
-                                <span class="kpi-trend up">↑ 12%</span>
-                            </div>
-                            <div class="kpi-value">1,247</div>
-                            <div class="kpi-label">Trips This Month</div>
-                        </div>
-                    </div>
-
-                    <div class="kpi-grid">
-                        <div class="kpi-card green">
-                            <div class="kpi-header">
-                                <div class="kpi-icon green"><i class="fas fa-money-bill-wave"></i></div>
-                                <span class="kpi-trend up">↑ 8%</span>
-                            </div>
-                            <div class="kpi-value">AED 2.4M</div>
-                            <div class="kpi-label">Revenue This Month</div>
-                        </div>
-                        <div class="kpi-card orange">
-                            <div class="kpi-header">
-                                <div class="kpi-icon red"><i class="fas fa-gas-pump"></i></div>
-                                <span class="kpi-trend down">↑ 5%</span>
-                            </div>
-                            <div class="kpi-value">AED 890K</div>
-                            <div class="kpi-label">Fuel Costs</div>
-                        </div>
-                        <div class="kpi-card blue">
-                            <div class="kpi-header">
-                                <div class="kpi-icon cyan"><i class="fas fa-chart-line"></i></div>
-                                <span class="kpi-trend up">↑ 15%</span>
-                            </div>
-                            <div class="kpi-value">AED 1.1M</div>
-                            <div class="kpi-label">Net Profit</div>
-                        </div>
-                        <div class="kpi-card orange">
+                        <div class="kpi-card orange" onclick="showKPIBreakdown('expiring-policies')">
                             <div class="kpi-header">
                                 <div class="kpi-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
                             </div>
-                            <div class="kpi-value">7</div>
-                            <div class="kpi-label">Expiring Documents</div>
+                            <div class="kpi-value kpi-expiring-docs">--</div>
+                            <div class="kpi-label">Expiring Policies</div>
                         </div>
                     </div>
 
-                    <div class="charts-grid">
-                        <div class="chart-card">
-                            <h3>Revenue vs Expenses (6 Months)</h3>
-                            <div class="chart-placeholder">
-                                <canvas id="revenueChart"></canvas>
-                            </div>
-                        </div>
+                    <div class="charts-grid dashboard-charts" style="grid-template-columns: 1fr;">
                         <div class="chart-card">
                             <h3>Fleet Utilization</h3>
                             <div class="chart-placeholder">
@@ -253,74 +220,121 @@
                         </div>
                     </div>
 
-                    <div class="data-table-wrapper">
-                        <div class="table-header">
-                            <h3>Recent Trips</h3>
-                            <div class="table-actions">
-                                <button class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</button>
-                                <button class="btn btn-primary"><i class="fas fa-plus"></i> New Trip</button>
+                    <!-- Expiring Policies Dashboard Section -->
+                    <div class="dashboard-table-container mt-4">
+                        <div class="section-header">
+                            <h3>Expiring Policies (Next 30 Days)</h3>
+                            <div class="header-actions">
+                                <div class="tab-group mini">
+                                    <button class="tab mini active" onclick="switchExpiryTab(this, 'all')">All</button>
+                                    <button class="tab mini" onclick="switchExpiryTab(this, 'mulkiya')">Mulkiya</button>
+                                    <button class="tab mini" onclick="switchExpiryTab(this, 'insurance')">Insurance</button>
+                                </div>
+                                <span class="badge-status high-alert" style="display: none;" id="expiry-alert-badge">Action Required</span>
                             </div>
                         </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Trip ID</th>
-                                    <th>Date</th>
-                                    <th>Vehicle</th>
-                                    <th>Driver</th>
-                                    <th>Route</th>
-                                    <th>Status</th>
-                                    <th>Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recent-trips-tbody">
-                                <tr>
-                                    <td style="color:var(--accent-blue);font-weight:600">TRP-2547</td>
-                                    <td>23 Feb 2026</td>
-                                    <td>Tanker - T-1045</td>
-                                    <td>Mohammed Ali</td>
-                                    <td>Jebel Ali → Abu Dhabi</td>
-                                    <td><span class="status-badge in-transit">In Transit</span></td>
-                                    <td style="font-weight:600">AED 3,200</td>
-                                </tr>
-                                <tr>
-                                    <td style="color:var(--accent-blue);font-weight:600">TRP-2546</td>
-                                    <td>23 Feb 2026</td>
-                                    <td>Truck - T-1023</td>
-                                    <td>Rashid Khan</td>
-                                    <td>Dubai → Sharjah</td>
-                                    <td><span class="status-badge completed">Completed</span></td>
-                                    <td style="font-weight:600">AED 1,800</td>
-                                </tr>
-                                <tr>
-                                    <td style="color:var(--accent-blue);font-weight:600">TRP-2545</td>
-                                    <td>22 Feb 2026</td>
-                                    <td>Trailer - T-1031</td>
-                                    <td>Abbas Hussein</td>
-                                    <td>RAK → Fujairah</td>
-                                    <td><span class="status-badge completed">Completed</span></td>
-                                    <td style="font-weight:600">AED 4,500</td>
-                                </tr>
-                                <tr>
-                                    <td style="color:var(--accent-blue);font-weight:600">TRP-2544</td>
-                                    <td>22 Feb 2026</td>
-                                    <td>Tanker - T-1045</td>
-                                    <td>Karim Youssef</td>
-                                    <td>Al Ain → Dubai</td>
-                                    <td><span class="status-badge pending">Pending</span></td>
-                                    <td style="font-weight:600">AED 2,100</td>
-                                </tr>
-                                <tr>
-                                    <td style="color:var(--accent-blue);font-weight:600">TRP-2543</td>
-                                    <td>21 Feb 2026</td>
-                                    <td>Truck - T-1012</td>
-                                    <td>Faisal Ahmed</td>
-                                    <td>Jebel Ali → RAK</td>
-                                    <td><span class="status-badge completed">Completed</span></td>
-                                    <td style="font-weight:600">AED 5,600</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Plate No</th>
+                                        <th>Category</th>
+                                        <th>Document</th>
+                                        <th>Expiry Date</th>
+                                        <th>Days Left</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expiry-dashboard-tbody">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">
+                                            No policies expiring within 30 days.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== FINANCE DASHBOARD ==================== -->
+                <section class="page-section" id="section-dashboard-finance">
+                    <div class="kpi-grid">
+                        <div class="kpi-card green">
+                            <div class="kpi-header">
+                                <div class="kpi-icon green"><i class="fas fa-dollar-sign"></i></div>
+                                <span class="kpi-trend up">↑ 15%</span>
+                            </div>
+                            <div class="kpi-value kpi-total-revenue">AED 2.4M</div>
+                            <div class="kpi-label">Total Revenue</div>
+                        </div>
+                        <div class="kpi-card red">
+                            <div class="kpi-header">
+                                <div class="kpi-icon red"><i class="fas fa-receipt"></i></div>
+                                <span class="kpi-trend down">↑ 5%</span>
+                            </div>
+                            <div class="kpi-value kpi-total-expenses">AED 1.3M</div>
+                            <div class="kpi-label">Total Expenses</div>
+                        </div>
+                        <div class="kpi-card blue">
+                            <div class="kpi-header">
+                                <div class="kpi-icon blue"><i class="fas fa-wallet"></i></div>
+                                <span class="kpi-trend up">↑ 22%</span>
+                            </div>
+                            <div class="kpi-value kpi-net-profit">AED 1.1M</div>
+                            <div class="kpi-label">Net Profit</div>
+                        </div>
+                        <div class="kpi-card purple">
+                            <div class="kpi-header">
+                                <div class="kpi-icon purple"><i class="fas fa-percentage"></i></div>
+                            </div>
+                            <div class="kpi-value kpi-profit-margin">45.8%</div>
+                            <div class="kpi-label">Profit Margin</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid dashboard-charts">
+                        <div class="chart-card">
+                            <h3>Revenue vs Expenses (Last 6 Months)</h3>
+                            <div class="chart-placeholder">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Revenue by Client</h3>
+                            <div class="chart-placeholder">
+                                <canvas id="revenueByClientChartFinance"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Trips (Moved to Finance as it's revenue-focused) -->
+                    <div class="data-table-wrapper mt-4">
+                        <div class="table-header">
+                            <h3>Recent Operations & Billing</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</button>
+                                <button class="btn btn-primary"><i class="fas fa-plus"></i> New Entry</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Trip ID</th>
+                                        <th>Date</th>
+                                        <th>Vehicle</th>
+                                        <th>Driver</th>
+                                        <th>Route</th>
+                                        <th>Status</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-trips-tbody">
+                                    <!-- Populated by script.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
@@ -451,162 +465,15 @@
                             <p class="subtitle">Vehicles, insurance, registration, visa & EID tracking</p>
                         </div>
                         <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Vehicle</button>
+                                  <div class="tabs mb-4">
+                        <button class="tab active" onclick="switchAssetHubTab(this, 'all')">All Vehicles</button>
+                        <button class="tab" onclick="switchAssetHubTab(this, 'insurance')">Insurance Details</button>
+                        <button class="tab" onclick="switchAssetHubTab(this, 'registration')">Registration (Mulkiya)</button>
                     </div>
-
-                    <div class="tabs">
-                        <button class="tab active" onclick="switchTab(this, 'fleet')">All Vehicles</button>
-                        <button class="tab" onclick="switchTab(this, 'fleet')">Insurance</button>
-                        <button class="tab" onclick="switchTab(this, 'fleet')">Registration</button>
-                        <button class="tab" onclick="switchTab(this, 'fleet')">Visa & EID</button>
-                    </div>
+        </div>
 
                     <div class="fleet-grid">
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-top">
-                                <div class="vehicle-info">
-                                    <h4>Tanker - Volvo FH16</h4>
-                                    <span class="plate">T-1045 DXB</span>
-                                    <div style="margin-top:8px"><span class="status-badge active">Active</span></div>
-                                </div>
-                                <div class="vehicle-type-icon">🚛</div>
-                            </div>
-                            <div class="vehicle-card-stats">
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-green)">156</div>
-                                    <div class="lbl">Trips</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-blue)">42,350</div>
-                                    <div class="lbl">KM</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-orange)">AED 85K</div>
-                                    <div class="lbl">Revenue</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-top">
-                                <div class="vehicle-info">
-                                    <h4>Truck - MAN TGS</h4>
-                                    <span class="plate">T-1023 SHJ</span>
-                                    <div style="margin-top:8px"><span class="status-badge active">Active</span></div>
-                                </div>
-                                <div class="vehicle-type-icon">🚚</div>
-                            </div>
-                            <div class="vehicle-card-stats">
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-green)">203</div>
-                                    <div class="lbl">Trips</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-blue)">58,120</div>
-                                    <div class="lbl">KM</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-orange)">AED 102K</div>
-                                    <div class="lbl">Revenue</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-top">
-                                <div class="vehicle-info">
-                                    <h4>Trailer - Scania R500</h4>
-                                    <span class="plate">T-1031 AUH</span>
-                                    <div style="margin-top:8px"><span
-                                            class="status-badge maintenance">Maintenance</span></div>
-                                </div>
-                                <div class="vehicle-type-icon">🚜</div>
-                            </div>
-                            <div class="vehicle-card-stats">
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-green)">89</div>
-                                    <div class="lbl">Trips</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-blue)">31,200</div>
-                                    <div class="lbl">KM</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-orange)">AED 67K</div>
-                                    <div class="lbl">Revenue</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-top">
-                                <div class="vehicle-info">
-                                    <h4>Tanker - Mercedes Actros</h4>
-                                    <span class="plate">T-1052 RAK</span>
-                                    <div style="margin-top:8px"><span class="status-badge active">Active</span></div>
-                                </div>
-                                <div class="vehicle-type-icon">🚛</div>
-                            </div>
-                            <div class="vehicle-card-stats">
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-green)">178</div>
-                                    <div class="lbl">Trips</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-blue)">49,800</div>
-                                    <div class="lbl">KM</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-orange)">AED 92K</div>
-                                    <div class="lbl">Revenue</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-top">
-                                <div class="vehicle-info">
-                                    <h4>Truck - DAF XF</h4>
-                                    <span class="plate">T-1012 DXB</span>
-                                    <div style="margin-top:8px"><span class="status-badge active">Active</span></div>
-                                </div>
-                                <div class="vehicle-type-icon">🚚</div>
-                            </div>
-                            <div class="vehicle-card-stats">
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-green)">221</div>
-                                    <div class="lbl">Trips</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-blue)">62,400</div>
-                                    <div class="lbl">KM</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-orange)">AED 118K</div>
-                                    <div class="lbl">Revenue</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="vehicle-card">
-                            <div class="vehicle-card-top">
-                                <div class="vehicle-info">
-                                    <h4>Tanker - Kenworth T880</h4>
-                                    <span class="plate">T-1067 FUJ</span>
-                                    <div style="margin-top:8px"><span class="status-badge inactive">Out of
-                                            Service</span></div>
-                                </div>
-                                <div class="vehicle-type-icon">🚛</div>
-                            </div>
-                            <div class="vehicle-card-stats">
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-green)">45</div>
-                                    <div class="lbl">Trips</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-blue)">18,900</div>
-                                    <div class="lbl">KM</div>
-                                </div>
-                                <div class="v-stat">
-                                    <div class="num" style="color:var(--accent-orange)">AED 34K</div>
-                                    <div class="lbl">Revenue</div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Dynamically populated by script.js -->
                     </div>
                 </section>
 
@@ -617,44 +484,52 @@
                             <h2>Manpower Management</h2>
                             <p class="subtitle">Drivers, helpers, assignments & document tracking</p>
                         </div>
-                        <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Employee</button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-secondary" onclick="manualFetchStaff()" style="background:#555; font-size:12px">
+                                <i class="fas fa-search-plus"></i> SOS
+                            </button>
+                            <button class="btn btn-primary" onclick="showModal('employee')">
+                                <i class="fas fa-user-plus"></i> Add Employee
+                            </button>
+                        </div>
                     </div>
 
                     <div class="kpi-grid">
-                        <div class="kpi-card blue">
+                        <div class="kpi-card blue" onclick="showKPIBreakdown('manpower-roles')">
                             <div class="kpi-header">
                                 <div class="kpi-icon blue"><i class="fas fa-id-card"></i></div>
                             </div>
-                            <div class="kpi-value">42</div>
-                            <div class="kpi-label">Total Drivers</div>
+                            <div class="kpi-value kpi-manpower-total">66</div>
+                            <div class="kpi-label">Total Staff</div>
                         </div>
                         <div class="kpi-card green">
                             <div class="kpi-header">
                                 <div class="kpi-icon green"><i class="fas fa-user-check"></i></div>
                             </div>
-                            <div class="kpi-value">38</div>
-                            <div class="kpi-label">On Duty Today</div>
+                            <div class="kpi-value kpi-manpower-drivers">63</div>
+                            <div class="kpi-label">Drivers</div>
                         </div>
                         <div class="kpi-card purple">
                             <div class="kpi-header">
-                                <div class="kpi-icon purple"><i class="fas fa-hard-hat"></i></div>
+                                <div class="kpi-icon purple"><i class="fas fa-wrench"></i></div>
                             </div>
-                            <div class="kpi-value">20</div>
-                            <div class="kpi-label">Helpers</div>
+                            <div class="kpi-value kpi-manpower-mechanics">3</div>
+                            <div class="kpi-label">Mechanics</div>
                         </div>
-                        <div class="kpi-card orange">
+                        <div class="kpi-card orange" onclick="showKPIBreakdown('expiring-visas')">
                             <div class="kpi-header">
                                 <div class="kpi-icon orange"><i class="fas fa-id-badge"></i></div>
                             </div>
-                            <div class="kpi-value">5</div>
+                            <div class="kpi-value kpi-manpower-expiring">--</div>
                             <div class="kpi-label">Visa/EID Expiring</div>
                         </div>
                     </div>
 
                     <div class="tabs">
-                        <button class="tab active" onclick="switchTab(this, 'manpower')">Drivers</button>
-                        <button class="tab" onclick="switchTab(this, 'manpower')">Helpers</button>
-                        <button class="tab" onclick="switchTab(this, 'manpower')">Documents</button>
+                        <button class="tab active" onclick="switchManpowerTab(this, 'all')">All Staff</button>
+                        <button class="tab" onclick="switchManpowerTab(this, 'driver')">Drivers</button>
+                        <button class="tab" onclick="switchManpowerTab(this, 'mechanic')">Mechanics</button>
+                        <button class="tab" onclick="switchManpowerTab(this, 'expiring')">Expiring Docs</button>
                     </div>
 
                     <div class="data-table-wrapper">
@@ -671,60 +546,12 @@
                                     <th>Employee</th>
                                     <th>Role</th>
                                     <th>License</th>
-                                    <th>Assigned Vehicle</th>
-                                    <th>Visa Expiry</th>
+                                    <th>Visa & EID Info</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="font-weight:600">Mohammed Ali Hassan</td>
-                                    <td>Heavy Driver</td>
-                                    <td>HV-2847 (Exp: Dec 2027)</td>
-                                    <td style="color:var(--accent-blue)">T-1045</td>
-                                    <td>15 Aug 2027</td>
-                                    <td><span class="status-badge active">On Duty</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Rashid Khan</td>
-                                    <td>Heavy Driver</td>
-                                    <td>HV-1923 (Exp: Mar 2027)</td>
-                                    <td style="color:var(--accent-blue)">T-1023</td>
-                                    <td>22 Nov 2026</td>
-                                    <td><span class="status-badge active">On Duty</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Abbas Hussein</td>
-                                    <td>Heavy Driver</td>
-                                    <td>HV-3301 (Exp: Jul 2026)</td>
-                                    <td style="color:var(--accent-blue)">T-1031</td>
-                                    <td>10 Apr 2026</td>
-                                    <td><span class="status-badge expiring">Visa Expiring</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Karim Youssef</td>
-                                    <td>Light Driver</td>
-                                    <td>LV-5521 (Exp: Jan 2028)</td>
-                                    <td style="color:var(--accent-blue)">T-1052</td>
-                                    <td>30 Sep 2027</td>
-                                    <td><span class="status-badge active">On Duty</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Faisal Ahmed</td>
-                                    <td>Heavy Driver</td>
-                                    <td>HV-4410 (Exp: Sep 2027)</td>
-                                    <td style="color:var(--accent-blue)">T-1012</td>
-                                    <td>18 Jun 2027</td>
-                                    <td><span class="status-badge active">On Duty</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Omar Abdullah</td>
-                                    <td>Helper</td>
-                                    <td>—</td>
-                                    <td style="color:var(--text-muted)">With T-1045</td>
-                                    <td>05 Mar 2026</td>
-                                    <td><span class="status-badge expiring">Visa Expiring</span></td>
-                                </tr>
+                            <tbody id="manpower-roster-tbody">
+                                <!-- Dynamically populated -->
                             </tbody>
                         </table>
                     </div>
@@ -752,28 +579,28 @@
                             <div class="kpi-header">
                                 <div class="kpi-icon green"><i class="fas fa-user-check"></i></div>
                             </div>
-                            <div class="kpi-value">56</div>
+                            <div class="kpi-value kpi-manpower-present">--</div>
                             <div class="kpi-label">Present Today</div>
                         </div>
                         <div class="kpi-card orange">
                             <div class="kpi-header">
                                 <div class="kpi-icon orange"><i class="fas fa-user-clock"></i></div>
                             </div>
-                            <div class="kpi-value">4</div>
+                            <div class="kpi-value kpi-manpower-leave">--</div>
                             <div class="kpi-label">On Leave</div>
                         </div>
                         <div class="kpi-card blue">
                             <div class="kpi-header">
                                 <div class="kpi-icon blue"><i class="fas fa-clock"></i></div>
                             </div>
-                            <div class="kpi-value">489</div>
-                            <div class="kpi-label">Hours Worked Today</div>
+                            <div class="kpi-value kpi-manpower-hours">--</div>
+                            <div class="kpi-label">Hours This Week</div>
                         </div>
                         <div class="kpi-card purple">
                             <div class="kpi-header">
                                 <div class="kpi-icon purple"><i class="fas fa-umbrella-beach"></i></div>
                             </div>
-                            <div class="kpi-value">2</div>
+                            <div class="kpi-value kpi-manpower-vacation">--</div>
                             <div class="kpi-label">On Vacation</div>
                         </div>
                     </div>
@@ -793,49 +620,39 @@
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="font-weight:600">Mohammed Ali</td>
-                                    <td>06:00 AM</td>
-                                    <td>—</td>
-                                    <td>4.5h</td>
-                                    <td>—</td>
-                                    <td><span class="status-badge active">Present</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Rashid Khan</td>
-                                    <td>05:45 AM</td>
-                                    <td>—</td>
-                                    <td>4.8h</td>
-                                    <td>—</td>
-                                    <td><span class="status-badge active">Present</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Abbas Hussein</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td><span class="status-badge pending">On Leave</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Karim Youssef</td>
-                                    <td>06:15 AM</td>
-                                    <td>—</td>
-                                    <td>4.3h</td>
-                                    <td>—</td>
-                                    <td><span class="status-badge active">Present</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="font-weight:600">Faisal Ahmed</td>
-                                    <td>06:00 AM</td>
-                                    <td>—</td>
-                                    <td>4.5h</td>
-                                    <td>—</td>
-                                    <td><span class="status-badge active">Present</span></td>
-                                </tr>
+                            <tbody id="attendance-tbody">
+                                <!-- Dynamically populated -->
                             </tbody>
                         </table>
+                    </div>
+                </section>
+
+                <!-- ==================== LIVE TRACKER ==================== -->
+                <section class="page-section" id="section-tracker">
+                    <div class="section-header">
+                        <div>
+                            <h2>Live Fleet Tracker</h2>
+                            <p class="subtitle">Real-time GPS positions, status and movement history</p>
+                        </div>
+                        <div class="header-actions">
+                            <span id="gps-status-badge" class="badge-status" style="background: var(--accent-blue); color: white;">GPS: Connecting...</span>
+                        </div>
+                    </div>
+                    <div class="tracker-container" style="height: calc(100vh - 200px); background: #1a2035; border-radius: 12px; overflow: hidden; position: relative;">
+                        <div id="main-map" style="width: 100%; height: 100%; z-index: 1;"></div>
+                        <div class="map-overlay-info" style="position: absolute; top: 20px; right: 20px; z-index: 1000; background: rgba(26, 32, 53, 0.9); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 250px;">
+                            <h4 style="margin-bottom: 10px;">Fleet Status</h4>
+                            <div id="map-stats-summary">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                                    <span>Moving</span>
+                                    <span id="stat-moving" style="color:var(--accent-green); font-weight:bold">0</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                                    <span>Idle</span>
+                                    <span id="stat-idle" style="color:var(--accent-orange); font-weight:bold">0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -1322,6 +1139,43 @@
         </div><!-- /main-content -->
     </div><!-- /app-container -->
 
+    <!-- ============ VEHICLE DETAILS MODAL ============ -->
+    <div class="modal-overlay" id="vehicle-modal">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h3 id="modal-vehicle-title">Vehicle Details</h3>
+                <button class="close-modal" onclick="closeVehicleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid" id="modal-vehicle-details">
+                    <!-- Dynamic Content -->
+                </div>
+                <!-- Live GPS Information -->
+                <div id="modal-gps-info"></div>
+                <!-- Movement Track Map -->
+                <div id="vehicle-track-map" style="height: 300px; width: 100%; margin-top: 20px; border-radius: 12px; border: 1px solid var(--border); display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeVehicleModal()">Close</button>
+                <button class="btn btn-primary" onclick="window.print()">Print Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breakdown Modal -->
+    <div id="breakdown-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Data Breakdown</h2>
+                <button class="close-btn" onclick="closeBreakdownModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content populated by script.js -->
+            </div>
+        </div>
+    </div>
+
+    <script src="vehicle_master_data.js"></script>
     <script src="script.js"></script>
 </body>
 

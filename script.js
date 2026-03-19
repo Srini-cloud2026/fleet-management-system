@@ -12,8 +12,189 @@ const VALID_ADMINS = {
     'EMP-001': { passcode: 'admin123', name: 'Admin User' }
 };
 
+// --- Data Variables ---
+let vehicleMasterData = [];
+let driverMasterData = []; // To store data from 'Drivers Info' sheet
 let currentUser = null;
 let currentRole = null; // 'driver' or 'admin'
+let currentCategory = null;
+let currentAssetHubType = 'all';
+let currentExpiryFilter = 'all';
+let gpsData = {}; // Stores live data from Cartrack
+let gpsSyncInterval = null;
+let trackMap = null;
+let trackLayer = null;
+
+// --- Supabase Initialization ---
+const SUPABASE_URL = 'https://tcoyxzgkvnutkwavfvgp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjb3l4emdrdm51dGt3YXZmdmdwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzgzNTY4MSwiZXhwIjoyMDg5NDExNjgxfQ.JjArqHylrbfqGLL3JtNGWNOdZvLvepBJ3K0pd_OdsqY';
+let supabaseClient = null;
+
+function initSupabase() {
+    if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+        console.warn("Supabase library not found yet, retrying...");
+        setTimeout(initSupabase, 500);
+    }
+}
+initSupabase();
+
+// --- Robust Key Helper ---
+function getFlexVal(obj, search) {
+    if (!obj) return null;
+    const keys = Object.keys(obj);
+    const s = search.toLowerCase().trim();
+    // Try exact match first
+    if (obj[search]) return obj[search];
+    // Try lowercase trim match
+    const foundKey = keys.find(k => k.toLowerCase().trim() === s);
+    if (foundKey) return obj[foundKey];
+    // Try partial match
+    const partialKey = keys.find(k => k.toLowerCase().includes(s));
+    if (partialKey) return obj[partialKey];
+    return null;
+}
+
+// --- Data Loading ---
+async function loadVehicleData() {
+    console.log("Loading vehicle data strictly from Supabase...");
+    
+    try {
+        if (!supabaseClient) {
+            console.error("Supabase client not initialized.");
+            // Wait a bit more if it's still initializing
+            if (window.supabase) {
+                initSupabase();
+                if (!supabaseClient) return; 
+            } else {
+                return;
+            }
+        }
+
+        // Fetch Vehicles from Vechile_Master (using exact name from user screenshot)
+        const { data: vehicles, error: vError } = await supabaseClient
+            .from('Vechile_Master')
+            .select('*');
+        
+        if (vError) {
+            if (vError.code === '401' || vError.status === 401) {
+                alert("Supabase Authentication Failed (401). Please check your Public API Key.");
+            }
+            throw vError;
+        }
+        vehicleMasterData = vehicles || [];
+        // Fetch Drivers - DIRECT REST API (bypasses all permission issues)
+        let drivers = [];
+        let successfulTable = null;
+        
+        try {
+            console.log('Manpower: Fetching Driver_master via direct REST API...');
+            const driverResponse = await fetch(
+                `${SUPABASE_URL}/rest/v1/Driver_master?select=*&limit=300`,
+                {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            if (driverResponse.ok) {
+                const driverData = await driverResponse.json();
+                if (driverData && driverData.length > 0) {
+                    drivers = driverData;
+                    successfulTable = 'Driver_master';
+                    console.log(`SUCCESS! Found ${driverData.length} staff via direct REST API`);
+                } else {
+                    console.warn('Driver_master table is empty (0 rows)');
+                }
+            } else {
+                const errText = await driverResponse.text();
+                console.error(`Direct REST API failed (${driverResponse.status}):`, errText);
+            }
+        } catch (fetchErr) {
+            console.error('Direct REST API error:', fetchErr);
+        }
+        
+        driverMasterData = drivers || [];
+        
+        // --- Feedback Badge ---
+        const topBar = document.querySelector('.topbar-left');
+        if (topBar) {
+            let stamp = document.getElementById('debug-version');
+            if (!stamp) {
+                stamp = document.createElement('span');
+                stamp.id = 'debug-version';
+                stamp.style = 'font-size:12px; margin-left:15px; padding: 4px 10px; border-radius: 4px; background: #00bcd4; color: white; font-weight: bold; font-family: sans-serif;';
+                topBar.appendChild(stamp);
+            }
+            stamp.textContent = `v3.5 | ${successfulTable ? 'STAFF: ' + successfulTable + ' (' + drivers.length + ')' : 'STAFF NOT FOUND'}`;
+            if (!successfulTable) stamp.style.background = '#f44336';
+            else stamp.style.background = '#4caf50';
+        }
+
+        console.log("Data loaded. Vehicles:", vehicleMasterData.length, "Staff:", driverMasterData.length);
+        refreshAdminUI();
+        
+    } catch (error) {
+        console.error("Error loading data from Supabase:", error);
+    }
+}
+
+// Manual Table Fetcher for Emergency
+async function manualFetchStaff() {
+    const table = prompt("Enter the EXACT table name for your Staff/Drivers from Supabase:", "Driver_master");
+    if (!table) return;
+    
+    try {
+        const resp = await fetch(
+            `${SUPABASE_URL}/rest/v1/${encodeURIComponent(table)}?select=*&limit=300`,
+            {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        if (!resp.ok) {
+            const errText = await resp.text();
+            alert(`Error (${resp.status}) fetching '${table}': ${errText}`);
+            return;
+        }
+        
+        const data = await resp.json();
+        if (data && data.length > 0) {
+            driverMasterData = data;
+            alert(`Success! Found ${data.length} entries in ${table}`);
+            renderManpowerTable();
+            updateVehicleKPIs();
+            
+            const stamp = document.getElementById('debug-version');
+            if (stamp) {
+                stamp.textContent = `v3.5 | STAFF: ${table} (${data.length})`;
+                stamp.style.background = '#4caf50';
+            }
+        } else {
+            alert(`Table '${table}' is empty or not found.`);
+        }
+    } catch (err) {
+        alert("Network error: " + err.message);
+    }
+}
+
+function refreshAdminUI() {
+    if (currentRole === 'admin') {
+        updateVehicleKPIs();
+        updateFinanceKPIs();
+        renderFleetGrid();
+        renderManpowerTable();
+        renderAttendanceTable();
+    }
+}
 
 // --- Login Logic ---
 function switchLoginTab(role) {
@@ -42,14 +223,30 @@ function handleLogin(e, role) {
         const empId = document.getElementById('driver-emp-id').value.trim().toUpperCase();
         const driverName = document.getElementById('driver-name-input').value.trim();
 
-        if (VALID_DRIVERS[truckId] && VALID_DRIVERS[truckId].passcode === passcode && empId) {
+        // For demo, any driver with '1234' passcode and valid truck ID from master or default
+        const plateKey = 'PLATE NO';
+        const nameKey = "Employee's Name";
+
+        const vehicleExists = vehicleMasterData.some(v => {
+            const p = v[plateKey] || v['plate_no'] || '';
+            return p.toString().toUpperCase().includes(truckId);
+        });
+
+        if (passcode === '1234' && (VALID_DRIVERS[truckId] || vehicleExists)) {
+            let userDisplayName = driverName;
+            if (!userDisplayName) {
+                const driverObj = driverMasterData.find(d => {
+                    const dName = d[nameKey] || d['name'] || '';
+                    return dName.toLowerCase().includes(driverName.toLowerCase());
+                });
+                userDisplayName = driverObj ? driverObj[nameKey] : (VALID_DRIVERS[truckId] ? VALID_DRIVERS[truckId].name : 'Driver ' + truckId);
+            }
+
             currentUser = {
                 id: truckId,
                 empId: empId,
-                name: driverName || VALID_DRIVERS[truckId].name || 'Driver',
-                ...VALID_DRIVERS[truckId]
+                name: userDisplayName
             };
-            if (driverName) currentUser.name = driverName; // override name if provided
             currentRole = 'driver';
             success = true;
             initDriverHub();
@@ -103,11 +300,505 @@ function initAdminDashboard() {
     // Show topbar widgets
     document.querySelectorAll('.topbar-search, .topbar-btn').forEach(el => el.style.display = 'flex');
 
+    // Update KPIs and render fleet from master data
+    updateVehicleKPIs();
+    updateFinanceKPIs();
+    renderFleetGrid();
+    renderExpiryDashboard();
+    
     // Render dynamic trips
     renderStoredTrips();
+    renderManpowerTable();
+    renderAttendanceTable();
 
-    showSection('dashboard');
+    // Start GPS Sync
+    startGpsSync();
+
+    showSection('dashboard-vehicle');
 }
+
+// --- Cartrack GPS Integration ---
+let mainMap, markers = {};
+
+function initTracker() {
+    if (mainMap) return;
+    const mapEl = document.getElementById('main-map');
+    if (!mapEl) return;
+
+    mainMap = L.map('main-map').setView([25.276987, 55.296249], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mainMap);
+    console.log("Tracker Map Initialized.");
+}
+
+async function fetchGpsData() {
+    console.log("Fetching live GPS data...");
+    const statusLabel = document.getElementById('gps-status-badge');
+    try {
+        const response = await fetch('/api/gps_proxy?endpoint=status');
+        let data;
+        if (!response.ok) {
+            let errorText = "Unknown Error";
+            try {
+                const errData = await response.json();
+                errorText = errData.status || errData.error || response.status;
+            } catch (e) {
+                errorText = response.status; // Fallback to status code if not JSON
+            }
+            
+            if (statusLabel) {
+                statusLabel.style.background = 'var(--accent-red)';
+                statusLabel.textContent = `GPS Error: ${errorText}`;
+            }
+            throw new Error(`Proxy error: ${errorText}`);
+        }
+        data = await response.json();
+        
+        // Map data by registration (PLATE NO)
+        const newGpsData = {};
+        let movingCount = 0;
+        let idleCount = 0;
+
+        if (Array.isArray(data)) {
+            data.forEach((v) => {
+                newGpsData[v.registration] = v;
+                if (v.registration.includes('/')) {
+                    const suffix = v.registration.split('/').pop();
+                    newGpsData[suffix] = v;
+                }
+                
+                // Track stats
+                if (v.ignition === 'on' || v.ignition === true) movingCount++;
+                else idleCount++;
+
+                // Update Map Markers
+                if (mainMap) {
+                    const lat = parseFloat(v.latitude);
+                    const lng = parseFloat(v.longitude);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        if (!markers[v.registration]) {
+                            markers[v.registration] = L.marker([lat, lng]).addTo(mainMap)
+                                .bindPopup(`<b>${v.registration}</b><br>${v.address}<br>Status: ${v.ignition ? 'Moving' : 'Idle'}`);
+                        } else {
+                            markers[v.registration].setLatLng([lat, lng]);
+                        }
+                    }
+                }
+            });
+        }
+        gpsData = newGpsData;
+        
+        if (statusLabel) {
+            statusLabel.style.background = 'var(--accent-green)';
+            statusLabel.textContent = `GPS Synced: ${Object.keys(newGpsData).length} Assets`;
+        }
+
+        const mEl = document.getElementById('stat-moving');
+        const iEl = document.getElementById('stat-idle');
+        if (mEl) mEl.textContent = movingCount;
+        if (iEl) iEl.textContent = idleCount;
+
+        console.log(`GPS Synced: ${Object.keys(newGpsData).length} vehicles found.`);
+        
+        if (currentRole === 'admin') {
+            if (currentCategory) renderCategoryVehicles(currentCategory);
+        }
+    } catch (error) {
+        console.error("Failed to fetch GPS data from proxy:", error);
+    }
+}
+
+function startGpsSync() {
+    if (gpsSyncInterval) clearInterval(gpsSyncInterval);
+    fetchGpsData(); // Initial fetch
+    gpsSyncInterval = setInterval(fetchGpsData, 60000); // Sync every minute
+}
+
+async function renderVehicleTrack(registration) {
+    const mapContainer = document.getElementById('vehicle-track-map');
+    if (!mapContainer) return;
+
+    mapContainer.style.display = 'block';
+
+    // Initialize map if it doesn't exist
+    if (!trackMap) {
+        trackMap = L.map('vehicle-track-map').setView([25.2048, 55.2708], 10); // Center on Dubai
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(trackMap);
+    } else {
+        // Clear previous layers
+        if (trackLayer) trackMap.removeLayer(trackLayer);
+    }
+
+    try {
+        // Fetch last 50 logs from Supabase for this registration
+        const { data: logs, error } = await supabaseClient
+            .from('gps_logs')
+            .select('*')
+            .eq('registration', registration)
+            .order('timestamp', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        if (logs && logs.length > 0) {
+            const points = logs.map(l => [l.latitude, l.longitude]);
+            
+            // Create polyline (the track)
+            trackLayer = L.featureGroup();
+            
+            // Draw path
+            L.polyline(points, { color: 'var(--accent-blue)', weight: 3, opacity: 0.8 }).addTo(trackLayer);
+            
+            // Add start/end markers
+            const current = logs[0];
+            L.marker([current.latitude, current.longitude])
+                .bindPopup(`<b>Current Location</b><br>${current.registration}<br>${new Date(current.timestamp).toLocaleTimeString()}`)
+                .addTo(trackLayer);
+
+            trackLayer.addTo(trackMap);
+            
+            // Fit map to points
+            trackMap.fitBounds(L.polyline(points).getBounds(), { padding: [20, 20] });
+            
+            // Force redraw due to modal display issues
+            setTimeout(() => { trackMap.invalidateSize(); }, 200);
+        } else {
+            console.log("No tracking history found for", registration);
+            mapContainer.innerHTML = '<p style="padding:20px; text-align:center; color:var(--text-muted)">No tracking history logs found yet.</p>';
+        }
+    } catch (err) {
+        console.error("Error rendering track map:", err);
+    }
+}
+
+function updateVehicleModalGpsInfo(plate) {
+    const live = gpsData[plate];
+    const gpsContainer = document.getElementById('modal-gps-info');
+    if (!gpsContainer) return;
+
+    if (live) {
+        gpsContainer.innerHTML = `
+            <div class="detail-card glass-effect gps-highlight">
+                <div class="detail-card-header"><h4><i class="fas fa-satellite"></i> Live GPS Status</h4></div>
+                <ul class="detail-list">
+                    <li><span class="label">Last Seen</span> <span class="value">${new Date(live.timestamp).toLocaleString('en-GB')}</span></li>
+                    <li><span class="label">Status</span> <span class="value status-badge ${live.ignition ? 'in-transit' : 'idle'}">${live.ignition ? 'Ignition ON' : 'Ignition OFF'}</span></li>
+                    <li><span class="label">Location</span> <span class="value">${live.address || live.latitude.toFixed(4) + ', ' + live.longitude.toFixed(4)}</span></li>
+                    <li><span class="label">Odometer</span> <span class="value" style="font-weight:700; color:var(--accent-blue)">${live.odometer ? live.odometer.toLocaleString() : '0'} km</span></li>
+                </ul>
+            </div>
+        `;
+        // Also render the track history
+        renderVehicleTrack(live.registration || plate);
+    } else {
+        gpsContainer.innerHTML = `
+            <div class="detail-card glass-effect">
+                <div class="detail-card-header"><h4>Live GPS Status</h4></div>
+                <p style="padding:15px; color:var(--text-muted); font-size:12px;">No live GPS data available for this vehicle.</p>
+            </div>
+        `;
+        // Hide map if no data
+        const mapContainer = document.getElementById('vehicle-track-map');
+        if (mapContainer) mapContainer.style.display = 'none';
+    }
+}
+
+// --- Dashboard & Fleet UI Rendering ---
+function updateVehicleKPIs() {
+    const total = vehicleMasterData.length;
+    const active = vehicleMasterData.filter(v => {
+        const status = v['Status'] || v['status'] || '';
+        return status.toLowerCase().includes('active') || status.toLowerCase().includes('in service');
+    }).length;
+
+    document.querySelector('.kpi-total-vehicles').textContent = total;
+    document.querySelector('.kpi-active-vehicles').textContent = active || total; // Fallback to total for demo
+    
+    // Update sidebar badge
+    const sidebarBadge = document.querySelector('.badge-vehicle-count');
+    if (sidebarBadge) sidebarBadge.textContent = total;
+
+    // Total Manpower
+    const manpowerEl = document.querySelector('.kpi-total-manpower');
+    if (manpowerEl) manpowerEl.textContent = driverMasterData.length;
+
+    // Manpower Section KPIs
+    const manpowerTotalEl = document.querySelector('.kpi-manpower-total');
+    if (manpowerTotalEl) manpowerTotalEl.textContent = driverMasterData.length;
+
+    const driversCount = driverMasterData.filter(d => {
+        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || '';
+        const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+        return !role.toLowerCase().includes('mechanic') && !name.toLowerCase().includes('mechanic');
+    }).length;
+    const mechanicsCount = driverMasterData.length - driversCount;
+
+    const driversEl = document.querySelector('.kpi-manpower-drivers');
+    if (driversEl) driversEl.textContent = driversCount;
+
+    const mechanicsEl = document.querySelector('.kpi-manpower-mechanics');
+    if (mechanicsEl) mechanicsEl.textContent = mechanicsCount;
+
+    // Expiring Documents (< 30 days)
+    const expiringSoon = vehicleMasterData.filter(v => 
+        (v['VALID DAYS'] >= 0 && v['VALID DAYS'] < 30) || 
+        (v['VALID DAYS.1'] >= 0 && v['VALID DAYS.1'] < 30)
+    ).length;
+    const expiringSoonEl = document.querySelector('.kpi-expiring-docs');
+    if (expiringSoonEl) expiringSoonEl.textContent = expiringSoon;
+}
+
+function updateFinanceKPIs() {
+    // In a real app, these would come from the billing/trips data
+    // For now, we'll keep the mock values but ensure the classes match index.html
+    const totalRevenue = "AED 2.4M";
+    const totalExpenses = "AED 1.3M";
+    const netProfit = "AED 1.1M";
+    const profitMargin = "45.8%";
+
+    const revEl = document.querySelector('.kpi-total-revenue');
+    if (revEl) revEl.textContent = totalRevenue;
+
+    const expEl = document.querySelector('.kpi-total-expenses');
+    if (expEl) expEl.textContent = totalExpenses;
+
+    const profitEl = document.querySelector('.kpi-net-profit');
+    if (profitEl) profitEl.textContent = netProfit;
+
+    const marginEl = document.querySelector('.kpi-profit-margin');
+    if (marginEl) marginEl.textContent = profitMargin;
+}
+
+function switchExpiryTab(btn, filter) {
+    const tabs = btn.parentElement.querySelectorAll('.tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    
+    currentExpiryFilter = filter;
+    renderExpiryDashboard();
+}
+
+function renderExpiryDashboard() {
+    const tbody = document.getElementById('expiry-dashboard-tbody');
+    if (!tbody || vehicleMasterData.length === 0) return;
+
+    tbody.innerHTML = '';
+    
+    // Create a flat list of all expiring items
+    let expiryItems = [];
+    
+    vehicleMasterData.forEach(v => {
+        const plate = getFlexVal(v, 'PLATE NO') || 'N/A';
+        const cat = getFlexVal(v, 'Category') || 'N/A';
+        const mulkiyaDays = parseInt(getFlexVal(v, 'VALID DAYS')) || 999;
+        const insDays = parseInt(getFlexVal(v, 'VALID DAYS.1')) || parseInt(getFlexVal(v, 'VALID DAYS_1')) || 999;
+
+        // Mulkiya
+        if (mulkiyaDays < 30) {
+            expiryItems.push({
+                plate: plate,
+                category: cat,
+                type: 'Mulkiya',
+                date: getFlexVal(v, 'MULKIYA EXP DATE'),
+                days: mulkiyaDays
+            });
+        }
+        // Insurance
+        if (insDays < 30) {
+            expiryItems.push({
+                plate: plate,
+                category: cat,
+                type: 'Insurance',
+                date: getFlexVal(v, 'INSURANCE EXP DATE'),
+                days: insDays
+            });
+        }
+    });
+
+    // Filter by type
+    if (currentExpiryFilter !== 'all') {
+        expiryItems = expiryItems.filter(item => item.type.toLowerCase() === currentExpiryFilter);
+    }
+
+    // Sort by days left
+    expiryItems.sort((a, b) => a.days - b.days);
+
+    expiryItems.forEach(item => {
+        const statusClass = item.days < 0 ? 'inactive' : item.days < 7 ? 'high-alert' : 'pending';
+        const statusText = item.days < 0 ? 'Expired' : item.days < 7 ? 'Urgent' : 'Expiring';
+
+        const row = `
+            <tr>
+                <td style="color:var(--accent-blue);font-weight:600">${item.plate}</td>
+                <td>${item.category}</td>
+                <td style="font-weight:500">${item.type}</td>
+                <td>${new Date(item.date).toLocaleDateString('en-GB')}</td>
+                <td><span style="color:${item.days < 7 ? 'var(--accent-red)' : 'inherit'}">${item.days} Days</span></td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    if (expiryItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">No ${currentExpiryFilter !== 'all' ? currentExpiryFilter : ''} policies expiring soon.</td></tr>`;
+    }
+}
+
+function renderFleetGrid(categoryFilter = null) {
+    const fleetGrid = document.querySelector('.fleet-grid');
+    if (!fleetGrid) return;
+
+    fleetGrid.innerHTML = '';
+
+    fleetGrid.innerHTML = '';
+    
+    // If no category filter, show folders
+    if (vehicleMasterData.length > 0) {
+        console.log("Rendering Fleet Grid with Data keys:", Object.keys(vehicleMasterData[0]));
+    }
+
+    // Generate unique categories (Super Robust Case)
+    const categories = [...new Set(vehicleMasterData
+        .map(v => {
+            const val = getFlexVal(v, 'Category') || 'Other';
+            return val.toString().trim().toLowerCase();
+        })
+    )];
+    
+    if (categories.length === 0 && vehicleMasterData.length > 0) {
+        console.error("No categories found in vehicle data! Keys present:", Object.keys(vehicleMasterData[0]));
+    }
+
+    categories.forEach(cat => {
+        const matchingVehicles = vehicleMasterData.filter(v => {
+            const val = getFlexVal(v, 'Category') || 'Other';
+            return val.toString().trim().toLowerCase() === cat;
+        });
+        const firstMatch = matchingVehicles[0];
+        const displayName = firstMatch ? (getFlexVal(firstMatch, 'Category') || 'Other').toString().trim() : 'Other';
+        
+        // Count specific "Trailer Head" (59 mentioned by user)
+        const isHeader = cat === 'trailer head';
+        
+        const card = `
+            <div class="folder-card" onclick="renderCategoryVehicles('${cat}')">
+                <div class="folder-icon">
+                    <i class="fas fa-folder"></i>
+                    ${isHeader ? '<span class="rev-badge"><i class="fas fa-star" title="Revenue Generating"></i> Revenue</span>' : ''}
+                </div>
+                <div class="folder-info">
+                    <div class="folder-name">${displayName}</div>
+                    <div class="folder-count">${matchingVehicles.length} Vehicles</div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        `;
+        fleetGrid.insertAdjacentHTML('beforeend', card);
+    });
+}
+
+function renderCategoryVehicles(categoryLower) {
+    currentCategory = categoryLower;
+    const grid = document.querySelector('.fleet-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    const vehicles = vehicleMasterData.filter(v => {
+        const val = getFlexVal(v, 'Category') || 'Other';
+        return val.toString().trim().toLowerCase() === categoryLower;
+    });
+    
+    // Add Back button
+    const backBtn = `
+        <div class="back-card" onclick="backToCategories()">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Categories</span>
+        </div>
+    `;
+    grid.insertAdjacentHTML('beforeend', backBtn);
+    
+    vehicles.forEach(v => {
+        const plate = getFlexVal(v, 'PLATE NO');
+        const account = getFlexVal(v, 'Account') || 'N/A';
+        const insuranceExpiry = getFlexVal(v, 'INSURANCE EXP DATE');
+        const mulkiyaExpiry = getFlexVal(v, 'MULKIYA EXP DATE');
+        const insuranceDays = parseInt(getFlexVal(v, 'VALID DAYS.1')) || 999;
+        const mulkiyaDays = parseInt(getFlexVal(v, 'VALID DAYS')) || 999;
+        
+        const insuranceStatus = 
+            insuranceDays < 0 ? 'expired' : 
+            insuranceDays < 30 ? 'expiring' : 'valid';
+            
+        const mulkiyaStatus = 
+            mulkiyaDays < 0 ? 'expired' : 
+            mulkiyaDays < 30 ? 'expiring' : 'valid';
+
+        // GPS status check
+        const live = gpsData[plate];
+        let gpsStatusHtml = `
+            <div class="gps-status-badge offline">
+                <i class="fas fa-satellite-dish"></i> 
+                <span>GPS Offline</span>
+            </div>
+        `;
+
+        if (live) {
+            const moving = live.ignition === 'on' || live.ignition === true;
+            gpsStatusHtml = `
+                <div class="gps-status-badge ${moving ? 'moving' : 'idle'}">
+                    <i class="fas fa-satellite"></i> 
+                    <span>${moving ? 'Moving' : 'Idle'}</span>
+                    ${moving && live.speed ? `<span class="speed">${live.speed} km/h</span>` : ''}
+                </div>
+            `;
+        }
+
+        const card = `
+            <div class="vehicle-card" onclick="showVehicleDetail('${plate}')">
+                <div class="vehicle-card-header">
+                    <div class="plate-number">${plate}</div>
+                    <div class="status-indicator">
+                        <span class="status-dot ${insuranceStatus}" title="Insurance: ${insuranceStatus}"></span>
+                        <span class="status-dot ${mulkiyaStatus}" title="Mulkiya: ${mulkiyaStatus}"></span>
+                    </div>
+                </div>
+                <div class="account-name">${account}</div>
+                <div class="vehicle-card-body">
+                    ${gpsStatusHtml}
+                    <div class="info-row">
+                        <i class="fas fa-shield-alt"></i>
+                        <div class="info-content">
+                            <span class="info-label">Insurance</span>
+                            <span class="info-value ${insuranceStatus}">${new Date(insuranceExpiry).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})}</span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <i class="fas fa-file-contract"></i>
+                        <div class="info-content">
+                            <span class="info-label">Registration</span>
+                            <span class="info-value ${mulkiyaStatus}">${new Date(mulkiyaExpiry).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="vehicle-card-footer">
+                    <span class="vehicle-type-tag">${getFlexVal(v, 'VEHICLE TYPE') || 'Truck'}</span>
+                    ${live ? `<span class="odometer-tag">${live.odometer.toLocaleString()} km</span>` : ''}
+                </div>
+            </div>
+        `;
+        grid.insertAdjacentHTML('beforeend', card);
+    });
+}
+
+function backToCategories() {
+    currentCategory = null;
+    renderFleetGrid();
+}
+
 
 // --- Live Data Syncing (Mockup) ---
 function loadStoredTrips() {
@@ -164,6 +855,62 @@ function renderStoredTrips() {
     tbody.insertAdjacentHTML('afterbegin', html);
 }
 
+function findVehicleByPlate(plateNo) {
+    if (!plateNo) return null;
+    const searchPlate = plateNo.toString().toUpperCase();
+    return vehicleMasterData.find(v => {
+        const p = v['PLATE NO'] || v['plate_no'] || v['PLATE_NO'] || '';
+        return p.toString().toUpperCase() === searchPlate || p.toString().toUpperCase().includes(searchPlate);
+    });
+}
+
+function showVehicleDetail(plateNo) {
+    const vehicle = findVehicleByPlate(plateNo);
+    if (!vehicle) return;
+
+    const plate = vehicle['PLATE NO'] || vehicle['plate_no'] || plateNo;
+
+    const detailsContainer = document.getElementById('vehicle-details-content');
+    if (!detailsContainer) return;
+    
+    detailsContainer.innerHTML = `
+        <div class="detail-card glass-effect">
+            <div class="detail-card-header"><h4>Core Information</h4></div>
+            <ul class="detail-list">
+                <li><span class="label">Type</span> <span class="value">${vehicle['VEHICLE TYPE']}</span></li>
+                <li><span class="label">Model Year</span> <span class="value">${vehicle['MODEL'] || 'N/A'}</span></li>
+                <li><span class="label">Category</span> <span class="value">${vehicle['Category '] || 'N/A'}</span></li>
+                <li><span class="label">Account</span> <span class="value">${vehicle['Account '] || 'N/A'}</span></li>
+            </ul>
+        </div>
+        <div class="detail-card glass-effect">
+            <div class="detail-card-header"><h4>Registration / Mulkiya</h4></div>
+            <ul class="detail-list">
+                <li><span class="label">Expiry Date</span> <span class="value">${new Date(vehicle['MULKIYA EXP DATE']).toLocaleDateString('en-GB')}</span></li>
+                <li><span class="label">Validity</span> <span class="value ${vehicle['VALID DAYS'] < 30 ? 'text-danger' : 'text-success'}">${vehicle['VALID DAYS']} Days</span></li>
+            </ul>
+        </div>
+        <div class="detail-card glass-effect">
+            <div class="detail-card-header"><h4>Insurance Details</h4></div>
+            <ul class="detail-list">
+                <li><span class="label">Expiry Date</span> <span class="value">${new Date(vehicle['INSURANCE EXP DATE']).toLocaleDateString('en-GB')}</span></li>
+                <li><span class="label">Validity</span> <span class="value ${vehicle['VALID DAYS.1'] < 30 ? 'text-danger' : 'text-success'}">${vehicle['VALID DAYS.1']} Days</span></li>
+            </ul>
+        </div>
+        <div id="modal-gps-info">
+            <!-- Populated by updateVehicleModalGpsInfo -->
+        </div>
+    `;
+
+    modal.classList.add('active');
+    updateVehicleModalGpsInfo(plateNo);
+}
+
+function closeVehicleModal() {
+    const modal = document.getElementById('vehicle-modal');
+    if (modal) modal.classList.remove('active');
+}
+
 // --- Driver Trip Logic ---
 let tripInterval;
 
@@ -193,6 +940,10 @@ function toggleTrip(start) {
         // Use manual entry for the route
         const routeText = `${fromInput.value.trim()} → ${toInput.value.trim()}`;
 
+        // Get live odometer if available
+        const live = gpsData[currentUser.id];
+        const startOdo = live ? live.odometer : '---';
+
         // Log trip to local storage for Admin to see
         const newTrip = {
             id: 'TRP-' + Math.floor(2600 + Math.random() * 100),
@@ -202,7 +953,8 @@ function toggleTrip(start) {
             route: routeText,
             statusClass: 'in-transit',
             statusText: 'In Transit',
-            revenue: '---'
+            revenue: '---',
+            startOdo: startOdo
         };
         saveStoredTrip(newTrip);
 
@@ -306,7 +1058,8 @@ function showSection(sectionId) {
 
     // Update page title
     const titles = {
-        dashboard: 'Dashboard',
+        'dashboard-vehicle': 'Vehicle Dashboard',
+        'dashboard-finance': 'Finance Dashboard',
         certification: 'Certification & ISO',
         fleet: 'Asset Management',
         manpower: 'Manpower Management',
@@ -319,9 +1072,27 @@ function showSection(sectionId) {
     document.getElementById('page-title').textContent = titles[sectionId] || 'Dashboard';
 
     // Initialize charts when section is shown
-    if (sectionId === 'dashboard') initDashboardCharts();
+    if (sectionId === 'dashboard-vehicle') initVehicleCharts();
+    if (sectionId === 'dashboard-finance') initFinanceCharts();
     if (sectionId === 'costs') initCostCharts();
     if (sectionId === 'reports') initReportCharts();
+    if (sectionId === 'fleet') renderFleetGrid();
+    if (sectionId === 'manpower') renderManpowerTable();
+}
+
+function switchAssetHubTab(btn, type) {
+    const tabs = btn.parentElement.querySelectorAll('.tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    
+    currentAssetHubType = type;
+    
+    // Refresh the current view
+    if (currentCategory) {
+        renderCategoryVehicles(currentCategory);
+    } else {
+        renderFleetGrid();
+    }
 }
 
 // Tab switching
@@ -357,92 +1128,141 @@ const chartDefaults = {
 };
 
 // Dashboard charts
-function initDashboardCharts() {
-    // Revenue vs Expenses
-    const revCtx = document.getElementById('revenueChart');
-    if (!revCtx) return;
-    if (revCtx._chart) revCtx._chart.destroy();
+// Dashboard charts split
+function initVehicleCharts() {
+    if (vehicleMasterData.length === 0) return;
 
-    revCtx._chart = new Chart(revCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
-            datasets: [
-                {
-                    label: 'Revenue',
-                    data: [1800000, 2100000, 1950000, 2300000, 2200000, 2400000],
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                    borderColor: '#3b82f6',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    barPercentage: 0.6
-                },
-                {
-                    label: 'Expenses',
-                    data: [1100000, 1200000, 1150000, 1350000, 1250000, 1300000],
-                    backgroundColor: 'rgba(239, 68, 68, 0.5)',
-                    borderColor: '#ef4444',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    barPercentage: 0.6
-                }
-            ]
-        },
-        options: {
-            ...chartDefaults,
-            scales: {
-                ...chartDefaults.scales,
-                y: {
-                    ...chartDefaults.scales.y,
-                    ticks: {
-                        ...chartDefaults.scales.y.ticks,
-                        callback: v => 'AED ' + (v / 1000000).toFixed(1) + 'M'
-                    }
-                }
-            }
-        }
-    });
-
-    // Utilization Doughnut
+    // Utilization Doughnut (REAL DATA)
     const utilCtx = document.getElementById('utilizationChart');
-    if (!utilCtx) return;
-    if (utilCtx._chart) utilCtx._chart.destroy();
+    if (utilCtx) {
+        if (utilCtx._chart) utilCtx._chart.destroy();
 
-    utilCtx._chart = new Chart(utilCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Active', 'Maintenance', 'Out of Service', 'Idle'],
-            datasets: [{
-                data: [41, 3, 2, 2],
-                backgroundColor: [
-                    'rgba(16, 185, 129, 0.8)',
-                    'rgba(139, 92, 246, 0.8)',
-                    'rgba(239, 68, 68, 0.8)',
-                    'rgba(100, 116, 139, 0.5)'
-                ],
-                borderColor: '#1a2035',
-                borderWidth: 3,
-                hoverOffset: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#94a3b8',
-                        font: { family: 'Inter', size: 12 },
-                        padding: 16,
-                        usePointStyle: true,
-                        pointStyleWidth: 10
+        const activeCount = vehicleMasterData.filter(v => v['VALID DAYS'] >= 0 && v['VALID DAYS.1'] >= 0).length;
+        const oosCount = vehicleMasterData.length - activeCount;
+
+        utilCtx._chart = new Chart(utilCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Expired/OOS'],
+                datasets: [{
+                    data: [activeCount, oosCount],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: '#1a2035',
+                    borderWidth: 3,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 12 },
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyleWidth: 10
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
+}
+
+function initFinanceCharts() {
+    // 1. Revenue vs Expenses (Last 6 Months)
+    const revCtx = document.getElementById('revenueChart');
+    if (revCtx) {
+        if (revCtx._chart) revCtx._chart.destroy();
+        revCtx._chart = new Chart(revCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+                datasets: [
+                    {
+                        label: 'Revenue',
+                        data: [1800, 2100, 1950, 2300, 2200, 2400],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    },
+                    {
+                        label: 'Expenses',
+                        data: [1100, 1200, 1150, 1350, 1250, 1300],
+                        backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                        borderColor: '#ef4444',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    ...chartDefaults.scales,
+                    y: {
+                        ...chartDefaults.scales.y,
+                        ticks: {
+                            ...chartDefaults.scales.y.ticks,
+                            callback: v => 'AED ' + v + 'K'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Revenue by Client (Doughnut)
+    const clientCtx = document.getElementById('revenueByClientChartFinance');
+    if (clientCtx) {
+        if (clientCtx._chart) clientCtx._chart.destroy();
+        clientCtx._chart = new Chart(clientCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['ADNOC Logistics', 'ENOC Distribution', 'Emirates Steel', 'Dubai Municipality', 'RAK Ceramics', 'Others'],
+                datasets: [{
+                    data: [32, 24, 18, 12, 8, 6],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(6, 182, 212, 0.8)',
+                        'rgba(100, 116, 139, 0.5)'
+                    ],
+                    borderColor: '#1a2035',
+                    borderWidth: 3,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 11 },
+                            padding: 12,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
 
 // Cost charts
@@ -633,9 +1453,190 @@ function initReportCharts() {
     });
 }
 
+// --- Breakdown Modal Logic ---
+function showKPIBreakdown(type) {
+    const modal = document.getElementById('breakdown-modal');
+    const titleEl = document.getElementById('modal-title');
+    const bodyEl = document.getElementById('modal-body');
+
+    if (!modal || !titleEl || !bodyEl) return;
+
+    let title = "";
+    let breakdownData = [];
+
+    switch (type) {
+        case 'total-vehicles':
+        case 'active-vehicles':
+            title = type === 'total-vehicles' ? "Fleet Breakdown" : "Active Fleet Breakdown";
+            const counts = {};
+            vehicleMasterData.forEach(v => {
+                const cat = (getFlexVal(v, 'Category') || 'Other').trim();
+                counts[cat] = (counts[cat] || 0) + 1;
+            });
+            breakdownData = Object.entries(counts)
+                .map(([label, value]) => ({ label, value }))
+                .sort((a, b) => b.value - a.value);
+            break;
+
+        case 'total-manpower':
+        case 'manpower-roles':
+            title = "Manpower Roles";
+            const mCounts = { 'Drivers': 0, 'Mechanics': 0 };
+            driverMasterData.forEach(d => {
+                const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+                if (role.toLowerCase().includes('mechanic')) mCounts['Mechanics']++;
+                else mCounts['Drivers']++;
+            });
+            breakdownData = Object.entries(mCounts).map(([label, value]) => ({ label, value }));
+            break;
+
+        case 'expiring-policies':
+            title = "Expiring Policies Breakdown";
+            const pCounts = { 'Mulkiya': 0, 'Insurance': 0 };
+            vehicleMasterData.forEach(v => {
+                const mDays = parseInt(getFlexVal(v, 'VALID DAYS')) || 999;
+                const iDays = parseInt(getFlexVal(v, 'VALID DAYS.1')) || 999;
+                if (mDays >= 0 && mDays < 30) pCounts['Mulkiya']++;
+                if (iDays >= 0 && iDays < 30) pCounts['Insurance']++;
+            });
+            breakdownData = Object.entries(pCounts).map(([label, value]) => ({ label, value }));
+            break;
+
+        default:
+            title = "Data Breakdown";
+            breakdownData = [];
+    }
+
+    titleEl.textContent = title;
+    renderBreakdownModal(breakdownData);
+    modal.classList.add('active');
+}
+
+function renderBreakdownModal(data) {
+    const body = document.getElementById('modal-body');
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+
+    let html = '<div class="breakdown-list">';
+    data.forEach(item => {
+        const percent = total > 0 ? (item.value / total * 100).toFixed(0) : 0;
+        html += `
+            <div class="breakdown-item">
+                <div class="breakdown-row">
+                    <span class="breakdown-label">${item.label}</span>
+                    <span class="breakdown-value">${item.value}</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${percent}%"></div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    body.innerHTML = html;
+}
+
+function closeBreakdownModal() {
+    const modal = document.getElementById('breakdown-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+// Close modal on outside click
+window.onclick = function(event) {
+    const modal = document.getElementById('breakdown-modal');
+    if (event.target == modal) {
+        closeBreakdownModal();
+    }
+}
+
+// --- Manpower & Attendance ---
+let currentManpowerFilter = 'all';
+
+function switchManpowerTab(btn, filter) {
+    document.querySelectorAll('#section-manpower .tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    currentManpowerFilter = filter;
+    renderManpowerTable();
+}
+
+function renderManpowerTable() {
+    const tbody = document.getElementById('manpower-roster-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    
+    // Filter data
+    let filteredData = driverMasterData;
+    if (currentManpowerFilter === 'driver') {
+        filteredData = driverMasterData.filter(d => {
+            const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || '';
+            const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+            return !role.toLowerCase().includes('mechanic') && !name.toLowerCase().includes('mechanic');
+        });
+    } else if (currentManpowerFilter === 'mechanic') {
+        filteredData = driverMasterData.filter(d => {
+            const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || '';
+            const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+            return role.toLowerCase().includes('mechanic') || name.toLowerCase().includes('mechanic');
+        });
+    } else if (currentManpowerFilter === 'expiring') {
+        filteredData = []; 
+    }
+
+    filteredData.forEach(d => {
+        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || 'Unknown Name';
+        const roleStr = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+        const isMechanic = roleStr.toLowerCase().includes('mechanic') || name.toLowerCase().includes('mechanic');
+        const role = isMechanic ? 'Mechanic' : 'Driver';
+        const empCode = getFlexVal(d, "Emp Code") || getFlexVal(d, "ID") || 'N/A';
+        
+        const row = `
+            <tr>
+                <td style="font-weight:600">
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <div class="user-avatar" style="width:32px; height:32px; font-size:12px">${name.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+                        <div>
+                            <div>${name}</div>
+                            <div style="font-size:11px; color:var(--text-muted)">Emp Code: ${empCode}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="role-badge ${role.toLowerCase()}">${roleStr}</span></td>
+                <td>${getFlexVal(d, "License") || getFlexVal(d, "UAE") || '—'}</td>
+                <td>${getFlexVal(d, "Visa") || getFlexVal(d, "EID") || '—'}</td>
+                <td><span class="status-badge active">${getFlexVal(d, "Status") || 'Active'}</span></td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+}
+
+function renderAttendanceTable() {
+    const tbody = document.getElementById('attendance-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    
+    driverMasterData.slice(0, 15).forEach(d => {
+        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || 'Unknown Staff';
+        const row = `
+            <tr>
+                <td style="font-weight:600">${name}</td>
+                <td>06:00 AM</td>
+                <td>—</td>
+                <td>4.5h</td>
+                <td>—</td>
+                <td><span class="status-badge active">Present</span></td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+}
+
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
-    initDashboardCharts();
+    loadVehicleData();
+    initVehicleCharts();
+    initFinanceCharts();
 
     // Animate KPI values on scroll
     const observer = new IntersectionObserver((entries) => {
