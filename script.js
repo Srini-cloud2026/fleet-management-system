@@ -87,45 +87,69 @@ async function loadVehicleData() {
         // Fetch Drivers from several possible names (Discovery)
         let drivers = [];
         const staffTables = [
-            'Driver_master', 'Drivers_Master', 'drivers_master', 'DriversMaster',
-            'Drivers_Info', 'drivers_info', 'Staff_Master', 'Staff', 'Drivers', 
-            'Driver master', 'Drivers Info', 'Manpower', 'manpower_details', 'employee_master'
+            'Driver_master', 'Drivers_Master', 'drivers_master', 'DriversMaster', 'Drivers Master',
+            'Drivers_Info', 'drivers_info', 'Staff_Master', 'Staff_Master', 'Staff', 'Drivers', 
+            'Drivers Info', 'Manpower', 'manpower_details', 'employee_master', 'employee_details'
         ];
         
+        let successfulTable = null;
         for (const tableName of staffTables) {
             console.log(`Trying to fetch staff from table: "${tableName}"...`);
             const { data, error } = await supabaseClient.from(tableName).select('*').limit(300);
             if (!error && data && data.length > 0) {
                 drivers = data;
+                successfulTable = tableName;
                 console.log(`Success! Found ${data.length} staff in "${tableName}"`);
-                // Update Badge for feedback
-                const stamp = document.getElementById('debug-version');
-                if (stamp) stamp.innerHTML += ` | STAFF FOUND in ${tableName}`;
                 break;
             }
         }
         
         driverMasterData = drivers || [];
         
-        console.log("Data loaded from Supabase. Vehicles:", vehicleMasterData.length, "Staff:", driverMasterData.length);
-        if (vehicleMasterData.length > 0) console.log("SAMPLE VEHICLE DATA:", vehicleMasterData[0]);
-        if (driverMasterData.length > 0) console.log("SAMPLE STAFF DATA:", driverMasterData[0]);
-        
-        // Add Version Stamp here for immediate feedback
+        // --- Feedback Badge ---
         const topBar = document.querySelector('.topbar-left');
         if (topBar) {
-            const stamp = document.getElementById('debug-version') || document.createElement('span');
-            stamp.id = 'debug-version';
-            stamp.style = 'font-size:12px; margin-left:15px; padding: 4px 10px; border-radius: 4px; background: #00bcd4; color: white; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2)';
-            stamp.textContent = 'v3.3-COMPLETE';
-            if (!document.getElementById('debug-version')) topBar.appendChild(stamp);
+            let stamp = document.getElementById('debug-version');
+            if (!stamp) {
+                stamp = document.createElement('span');
+                stamp.id = 'debug-version';
+                stamp.style = 'font-size:12px; margin-left:15px; padding: 4px 10px; border-radius: 4px; background: #00bcd4; color: white; font-weight: bold; font-family: sans-serif;';
+                topBar.appendChild(stamp);
+            }
+            stamp.textContent = `v3.4 | ${successfulTable ? 'STAFF: ' + successfulTable : 'STAFF NOT FOUND'}`;
+            if (!successfulTable) stamp.style.background = '#f44336';
+            else stamp.style.background = '#4caf50';
         }
 
+        console.log("Data loaded. Vehicles:", vehicleMasterData.length, "Staff:", driverMasterData.length);
         refreshAdminUI();
         
     } catch (error) {
         console.error("Error loading data from Supabase:", error);
-        alert("CRITICAL ERROR: Failed to connect to Supabase. Check Console (F12) for details.");
+    }
+}
+
+// Manual Table Fetcher for Emergency
+async function manualFetchStaff() {
+    const table = prompt("Enter the EXACT table name for your Staff/Drivers from Supabase:", "Driver_master");
+    if (!table) return;
+    
+    const { data, error } = await supabaseClient.from(table).select('*').limit(300);
+    if (error) {
+        alert("Error fetching from '" + table + "': " + error.message);
+    } else if (data && data.length > 0) {
+        driverMasterData = data;
+        alert("Success! Found " + data.length + " entries in " + table);
+        renderManpowerTable();
+        updateVehicleKPIs();
+        
+        const stamp = document.getElementById('debug-version');
+        if (stamp) {
+            stamp.textContent = `v3.4 | STAFF: ${table}`;
+            stamp.style.background = '#4caf50';
+        }
+    } else {
+        alert("Table '" + table + "' is empty or not found.");
     }
 }
 

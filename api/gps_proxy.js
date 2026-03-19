@@ -1,3 +1,8 @@
+// Use native fetch if available (Node 18+), otherwise fallback to node-fetch
+if (typeof fetch === 'undefined') {
+    var fetch = require('node-fetch');
+}
+
 // Supabase Config
 const SUPABASE_URL = 'https://tcoyxzgkvnutkwavfvgp.supabase.co';
 // Use Environment Variable for the Secret Key (Security Best Practice)
