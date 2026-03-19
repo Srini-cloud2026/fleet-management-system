@@ -304,15 +304,23 @@ async function fetchGpsData() {
     const statusLabel = document.getElementById('gps-status-badge');
     try {
         const response = await fetch('/api/gps_proxy?endpoint=status');
+        let data;
         if (!response.ok) {
-            const errData = await response.json();
+            let errorText = "Unknown Error";
+            try {
+                const errData = await response.json();
+                errorText = errData.status || errData.error || response.status;
+            } catch (e) {
+                errorText = response.status; // Fallback to status code if not JSON
+            }
+            
             if (statusLabel) {
                 statusLabel.style.background = 'var(--accent-red)';
-                statusLabel.textContent = `GPS Error: ${errData.status || 'Proxy'}`;
+                statusLabel.textContent = `GPS Error: ${errorText}`;
             }
-            throw new Error('Proxy error');
+            throw new Error(`Proxy error: ${errorText}`);
         }
-        const data = await response.json();
+        data = await response.json();
         
         // Map data by registration (PLATE NO)
         const newGpsData = {};
