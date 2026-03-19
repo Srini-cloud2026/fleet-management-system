@@ -94,20 +94,21 @@ async function loadVehicleData() {
         
         let successfulTable = null;
         for (const tableName of staffTables) {
-            console.log(`Trying to fetch staff from table: "${tableName}"...`);
+            console.log(`Manpower Discovery: Trying "${tableName}"...`);
             const { data, error } = await supabaseClient.from(tableName).select('*').limit(300);
+            
             if (error) {
-                // If it's a 401, it's likely RLS blocking the view
-                if (error.code === '42501' || error.status === 401 || error.status === 403) {
-                     console.error(`Permission Denied (RLS) for table "${tableName}"`);
-                }
+                console.warn(`Table "${tableName}" failed:`, error.message, error.code);
                 continue;
             }
+            
             if (data && data.length > 0) {
                 drivers = data;
                 successfulTable = tableName;
                 console.log(`Success! Found ${data.length} staff in "${tableName}"`);
                 break;
+            } else {
+                console.log(`Table "${tableName}" was found but is EMPTY (0 rows). Check RLS.`);
             }
         }
         
