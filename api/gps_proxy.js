@@ -65,51 +65,60 @@ export default async function handler(req, res) {
     const password = 'Admin123!';
 
     const auth = Buffer.from(`${username}:${password}`).toString('base64');
-    const baseUrl = 'https://fleetapi-me.cartrack.com/rest';
+    
+    // Try Middle East first, then Global
+    const clusters = [
+        'https://fleetapi-me.cartrack.com/rest',
+        'https://fleetapi.cartrack.com/rest'
+    ];
 
-    let url = '';
-    if (endpoint === 'status') {
-        url = `${baseUrl}/vehicles/status?odometer_in_km=1`;
-    } else if (endpoint === 'odometer' && registration) {
-        url = `${baseUrl}/vehicles/${registration}/odometer`;
-    } else {
-        return res.status(400).json({ error: 'Invalid endpoint' });
+    let lastError = null;
+    let successfulData = null;
+
+    for (const baseUrl of clusters) {
+        let url = '';
+        if (endpoint === 'status') {
+            url = `${baseUrl}/vehicles/status?odometer_in_km=1`;
+        } else if (endpoint === 'odometer' && registration) {
+            url = `${baseUrl}/vehicles/${registration}/odometer`;
+        } else {
+            return res.status(400).json({ error: 'Invalid endpoint' });
+        }
+
+        try {
+            console.log(`Attempting Cartrack (${baseUrl}): ${url}`);
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Basic ${auth}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                successfulData = await response.json();
+                console.log(`Successfully fetched from ${baseUrl}`);
+                break; 
+            } else {
+                lastError = { status: response.status, text: await response.text(), url: baseUrl };
+            }
+        } catch (error) {
+            lastError = { status: 500, text: error.message, url: baseUrl };
+        }
     }
 
-    try {
-        console.log(`Fetching from Cartrack: ${url}`);
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Basic ${auth}`,
-                'Accept': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Cartrack API Error (${response.status}):`, errorText);
-
-            // Return a more descriptive error to the frontend
-            return res.status(response.status).json({
-                error: 'Cartrack API Error',
-                status: response.status,
-                details: errorText,
-                attempted_user: username,
-                attempted_url: url,
-                tip: response.status === 401 ? 'Check Cartrack Username/Password' : 'Contact Support'
-            });
-        }
-
-        const data = await response.json();
-
+    if (successfulData) {
         // --- LOG TO SUPABASE IN BACKGROUND ---
         if (endpoint === 'status') {
-            await logToSupabase(data);
+            await logToSupabase(successfulData);
         }
-
-        return res.status(200).json(data);
-    } catch (error) {
-        console.error('Proxy Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        return res.status(200).json(successfulData);
+    } else {
+        return res.status(lastError.status || 500).json({
+            error: 'Cartrack API Error',
+            status: lastError.status,
+            details: lastError.text,
+            attempted_clusters: clusters,
+            tip: lastError.status === 401 ? 'Check Cartrack Username/Password' : 'Contact Support'
+        });
     }
 }

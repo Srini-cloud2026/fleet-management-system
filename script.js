@@ -87,9 +87,9 @@ async function loadVehicleData() {
         // Fetch Drivers from several possible names (Discovery)
         let drivers = [];
         const staffTables = [
-            'Driver_master', 'Drivers_Info', 'drivers_info', 'Drivers_Master', 
-            'Staff_Master', 'Staff', 'Drivers', 'Driver master', 'Drivers Info', 
-            'Manpower', 'manpower_details', 'employee_master'
+            'Driver_master', 'Drivers_Master', 'drivers_master', 'DriversMaster',
+            'Drivers_Info', 'drivers_info', 'Staff_Master', 'Staff', 'Drivers', 
+            'Driver master', 'Drivers Info', 'Manpower', 'manpower_details', 'employee_master'
         ];
         
         for (const tableName of staffTables) {
@@ -674,7 +674,13 @@ function renderCategoryVehicles(categoryLower) {
 
         // GPS status check
         const live = gpsData[plate];
-        let gpsStatusHtml = '';
+        let gpsStatusHtml = `
+            <div class="gps-status-badge offline">
+                <i class="fas fa-satellite-dish"></i> 
+                <span>GPS Offline</span>
+            </div>
+        `;
+
         if (live) {
             const moving = live.ignition === 'on' || live.ignition === true;
             gpsStatusHtml = `
