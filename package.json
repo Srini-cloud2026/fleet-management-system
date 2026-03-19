@@ -1,0 +1,15 @@
+{
+  "name": "fleet-management-system",
+  "version": "1.0.0",
+  "description": "Fleet Management System for AJ Steel",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
+  "dependencies": {
+    "node-fetch": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
