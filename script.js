@@ -56,6 +56,18 @@ function getFlexVal(obj, search) {
     return null;
 }
 
+// --- Category Certificates Data ---
+let categoryCertificates = [
+    { id: 1, category: 'Trailer Head', name: 'ADFCA Permit', issueDate: '2025-01-10', expiryDate: '2026-01-09', status: 'Valid', file: null },
+    { id: 2, category: 'Trailer Head', name: 'Route Pass (E11)', issueDate: '2025-03-01', expiryDate: '2025-09-01', status: 'Valid', file: null },
+    { id: 3, category: 'Bus', name: 'RTA Passenger Transport', issueDate: '2024-05-15', expiryDate: '2025-05-14', status: 'Valid', file: null },
+    { id: 4, category: 'Pick up', name: 'Civil Defense Approval', issueDate: '2023-11-20', expiryDate: '2025-11-19', status: 'Valid', file: null },
+    { id: 5, category: 'Forklift', name: 'Safety Operation Certificate', issueDate: '2024-06-01', expiryDate: '2025-06-01', status: 'Expiring Soon', file: null },
+    { id: 6, category: 'Van', name: 'Food Transport Permit', issueDate: '2023-01-01', expiryDate: '2024-01-01', status: 'Expired', file: null }
+];
+
+let tripTicketRates = []; // Will be populated from Supabase table: Trip_Rates
+
 // --- Data Loading ---
 async function loadVehicleData() {
     console.log("Loading vehicle data strictly from Supabase...");
@@ -130,9 +142,112 @@ async function loadVehicleData() {
                 stamp.style = 'font-size:12px; margin-left:15px; padding: 4px 10px; border-radius: 4px; background: #00bcd4; color: white; font-weight: bold; font-family: sans-serif;';
                 topBar.appendChild(stamp);
             }
-            stamp.textContent = `v3.5 | ${successfulTable ? 'STAFF: ' + successfulTable + ' (' + drivers.length + ')' : 'STAFF NOT FOUND'}`;
+            stamp.textContent = `v3.5.1 | ${successfulTable ? 'STAFF: ' + successfulTable + ' (' + drivers.length + ')' : 'STAFF NOT FOUND'}`;
             if (!successfulTable) stamp.style.background = '#f44336';
             else stamp.style.background = '#4caf50';
+        }
+        // --- Fetch Trip Rates from Supabase (Direct REST API for Reliability) ---
+        try {
+            console.log('Fetching Trip Rates with Direct REST API fallbacks...');
+            let ratesData = null;
+            let successTable = null;
+            let isForbidden = false;
+            
+            const baseNames = [
+                'Driver_tip_master', 'Driver_trip_master', 'Trip_Rates', 'Trip_Rate', 
+                'Driver_Trip_Master', 'Driver Tip Master', 'driver_trip_master', 
+                'trip_rates', 'TripPrices', 'NSGT_Trip_Rates', 'NSGT Trip Rates', 
+                'Trip_Ticket_Rates', 'trip_ticket_rates', 'Trip_Ticket_Rate'
+            ];
+            
+            const tablesToTry = [...new Set(baseNames.flatMap(t => [t, `"${t}"`]))];
+            const logs = [];
+
+            for (const tName of tablesToTry) {
+                try {
+                    const resp = await fetch(
+                        `${SUPABASE_URL}/rest/v1/${encodeURIComponent(tName)}?select=*`,
+                        {
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data && data.length > 0) {
+                            ratesData = data;
+                            successTable = tName;
+                            break;
+                        } else {
+                            logs.push(`${tName}: Empty (200 OK)`);
+                        }
+                    } else {
+                        const err = await resp.text();
+                        if (resp.status === 403) isForbidden = true;
+                        logs.push(`${tName}: ${resp.status} (${err})`);
+                    }
+                } catch (e) {
+                    logs.push(`${tName}: Fetch Error (${e.message})`);
+                }
+            }
+            
+            if (ratesData) {
+                // Smart Key Matcher: handles "From Location", "from_location", "FROM", "Loc From", etc.
+                const findValue = (obj, searchStr) => {
+                    if (!obj) return null;
+                    const normalizedSearch = searchStr.toLowerCase().replace(/[\s_]/g, '');
+                    const keys = Object.keys(obj);
+                    // Priority 1: Exact normalized match
+                    let key = keys.find(k => k.toLowerCase().replace(/[\s_]/g, '') === normalizedSearch);
+                    // Priority 2: Includes search string
+                    if (!key) key = keys.find(k => k.toLowerCase().replace(/[\s_]/g, '').includes(normalizedSearch));
+                    return key ? obj[key] : null;
+                };
+
+                tripTicketRates = ratesData.map(r => ({
+                    from: findValue(r, 'from') || findValue(r, 'loc') || 'Unknown',
+                    to: findValue(r, 'to') || findValue(r, 'dest') || 'Unknown',
+                    rate: findValue(r, 'rate') || findValue(r, 'price') || 0
+                })).filter(r => r.from !== 'Unknown' || r.to !== 'Unknown');
+                
+                console.log(`SUCCESS! Loaded ${tripTicketRates.length} trip rates from ${successTable}.`);
+                
+                const dbg = document.createElement('div');
+                dbg.id = 'trip-debug-info';
+                dbg.style = 'color:#4caf50; font-size:11px; padding:10px; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius:4px; margin-bottom:15px; font-family: monospace;';
+                const firstRow = ratesData[0];
+                const cols = Object.keys(firstRow).join(', ');
+                dbg.innerHTML = `<strong style="color:#4caf50">✅ TABLE FOUND:</strong> ${successTable}<br><strong>ROWS:</strong> ${ratesData.length}<br><strong>COLUMNS:</strong> ${cols}`;
+                
+                const existingDbg = document.getElementById('trip-debug-info');
+                if (existingDbg) existingDbg.remove();
+                document.getElementById('trip-entry-form')?.prepend(dbg);
+
+                populateLocationDropdowns();
+            } else {
+                console.error("Trip Rates: All tables failed.", logs);
+                const dbg = document.createElement('div');
+                dbg.id = 'trip-debug-info';
+                dbg.style = 'color:#f44336; font-size:11px; padding:12px; background: rgba(244,67,54,0.05); border: 2px solid #f44336; border-radius:8px; margin-bottom:15px; font-family: sans-serif;';
+                
+                let html = `<strong style="font-size:14px">⚠️ Trip Data Blocked (403 Forbidden)</strong><br>`;
+                html += `<p style="margin:8px 0; font-size:12px">Supabase is denying access to <code>Driver_tip_master</code>. Please run this SQL in your Supabase SQL Editor:</p>`;
+                html += `<pre style="background:#000; color:#0f0; padding:10px; border-radius:4px; font-size:11px; overflow-x:auto;">ALTER TABLE "Driver_tip_master" DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE "Driver_tip_master" TO anon, authenticated, service_role;</pre>`;
+                html += `<div style="font-size:10px; color:#666; margin-top:10px; border-top:1px solid #ddd; padding-top:5px;"><strong>Details:</strong><br>${logs.join('<br>')}</div>`;
+                
+                dbg.innerHTML = html;
+                
+                const existingDbg = document.getElementById('trip-debug-info');
+                if (existingDbg) existingDbg.remove();
+                document.getElementById('trip-entry-form')?.prepend(dbg);
+            }
+        } catch (err) {
+            console.error("Critical Trip Rates Error:", err);
         }
 
         console.log("Data loaded. Vehicles:", vehicleMasterData.length, "Staff:", driverMasterData.length);
@@ -175,7 +290,7 @@ async function manualFetchStaff() {
             
             const stamp = document.getElementById('debug-version');
             if (stamp) {
-                stamp.textContent = `v3.5 | STAFF: ${table} (${data.length})`;
+                stamp.textContent = `v3.5.1 | STAFF: ${table} (${data.length})`;
                 stamp.style.background = '#4caf50';
             }
         } else {
@@ -249,6 +364,7 @@ function handleLogin(e, role) {
             };
             currentRole = 'driver';
             success = true;
+            document.body.classList.add('mobile-view');
             initDriverHub();
         }
     } else if (role === 'admin') {
@@ -290,6 +406,7 @@ function initDriverHub() {
 }
 
 function initAdminDashboard() {
+    document.body.classList.remove('mobile-view');
     // Show sidebar for admin
     const sidebar = document.querySelector('.sidebar');
     if (sidebar) sidebar.style.display = 'flex';
@@ -359,6 +476,7 @@ async function fetchGpsData() {
         const newGpsData = {};
         let movingCount = 0;
         let idleCount = 0;
+        let offCount = 0;
 
         if (Array.isArray(data)) {
             data.forEach((v) => {
@@ -367,46 +485,118 @@ async function fetchGpsData() {
                     const suffix = v.registration.split('/').pop();
                     newGpsData[suffix] = v;
                 }
+                if (v.odometer) {
+                    v.odometer = parseFloat((v.odometer / 1000).toFixed(2)); // Convert meters to km
+                }
                 
                 // Track stats
-                if (v.ignition === 'on' || v.ignition === true) movingCount++;
-                else idleCount++;
+                if (v.ignition === 'on' || v.ignition === true) {
+                    if (v.speed > 0) movingCount++;
+                    else idleCount++;
+                } else {
+                    offCount++;
+                }
 
                 // Update Map Markers
                 if (mainMap) {
-                    const lat = parseFloat(v.latitude);
-                    const lng = parseFloat(v.longitude);
+                    const lat = v.location ? parseFloat(v.location.latitude) : NaN;
+                    const lng = v.location ? parseFloat(v.location.longitude) : NaN;
+                    const address = v.location ? v.location.position_description : '';
                     if (!isNaN(lat) && !isNaN(lng)) {
+                        const isIgnitionOn = v.ignition === 'on' || v.ignition === true;
+                        const statusStr = isIgnitionOn ? (v.speed > 0 ? 'Moving' : 'Idle') : 'Ignition Off';
+                        const customIcon = getVehicleIcon(v.registration, isIgnitionOn, v.speed || 0);
+                        
                         if (!markers[v.registration]) {
-                            markers[v.registration] = L.marker([lat, lng]).addTo(mainMap)
-                                .bindPopup(`<b>${v.registration}</b><br>${v.address}<br>Status: ${v.ignition ? 'Moving' : 'Idle'}`);
+                            markers[v.registration] = L.marker([lat, lng], { icon: customIcon }).addTo(mainMap)
+                                .bindPopup(`<div style="cursor:pointer;" onclick="showVehicleDetail('${v.registration}')"><b>${v.registration}</b><br>${address}<br>Status: ${statusStr} <br><br><span style="color:var(--accent-blue)">Click to view details</span></div>`)
+                                .bindTooltip(v.registration, { permanent: true, direction: 'right', className: 'vehicle-tooltip', offset: [5, 0] });
                         } else {
-                            markers[v.registration].setLatLng([lat, lng]);
+                            markers[v.registration].setLatLng([lat, lng]).setIcon(customIcon)
+                                .getPopup().setContent(`<div style="cursor:pointer;" onclick="showVehicleDetail('${v.registration}')"><b>${v.registration}</b><br>${address}<br>Status: ${statusStr} <br><br><span style="color:var(--accent-blue)">Click to view details</span></div>`);
                         }
                     }
                 }
             });
         }
         gpsData = newGpsData;
+        const assetCount = Object.keys(newGpsData).length;
         
         if (statusLabel) {
-            statusLabel.style.background = 'var(--accent-green)';
-            statusLabel.textContent = `GPS Synced: ${Object.keys(newGpsData).length} Assets`;
+            if (assetCount > 0) {
+                statusLabel.style.background = 'var(--accent-green)';
+                statusLabel.textContent = `GPS Synced: ${assetCount} Assets`;
+            } else {
+                statusLabel.style.background = 'var(--accent-orange)';
+                statusLabel.textContent = `GPS Connected: 0 Assets Found`;
+            }
         }
 
         const mEl = document.getElementById('stat-moving');
         const iEl = document.getElementById('stat-idle');
+        const oEl = document.getElementById('stat-off');
         if (mEl) mEl.textContent = movingCount;
         if (iEl) iEl.textContent = idleCount;
+        if (oEl) oEl.textContent = offCount;
 
-        console.log(`GPS Synced: ${Object.keys(newGpsData).length} vehicles found.`);
+        console.log(`GPS Synced: ${assetCount} vehicles found.`);
         
         if (currentRole === 'admin') {
             if (currentCategory) renderCategoryVehicles(currentCategory);
+            // Refresh dashboard charts if we are physically looking at it
+            const dashboardSec = document.getElementById('section-dashboard-vehicle');
+            if (dashboardSec && dashboardSec.classList.contains('active')) {
+                initVehicleCharts();
+            }
         }
     } catch (error) {
         console.error("Failed to fetch GPS data from proxy:", error);
     }
+}
+
+function showGpsBreakdownModal(type) {
+    const modal = document.getElementById('breakdown-modal');
+    if (!modal) return;
+    
+    let title = 'Total Vehicles';
+    if (type === 'tracked') title = 'Tracked Vehicles (GPS)';
+    if (type === 'untracked') title = 'Untracked Vehicles';
+
+    document.getElementById('modal-title').textContent = title;
+    
+    const body = document.getElementById('modal-body');
+    body.innerHTML = '';
+    
+    const filtered = vehicleMasterData.filter(v => {
+        const isTracked = findGpsMatch(getFlexVal(v, 'PLATE NO'), gpsData) !== null;
+        if (type === 'tracked') return isTracked;
+        if (type === 'untracked') return !isTracked;
+        return true; 
+    });
+
+    const grouped = {};
+    filtered.forEach(v => {
+        const cat = (getFlexVal(v, 'Category') || 'Other').toString().trim();
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(v);
+    });
+
+    let html = '<div class="table-responsive"><table class="data-table"><thead><tr><th style="width:25%">Category</th><th style="width:15%">Count</th><th style="width:60%">Vehicles</th></tr></thead><tbody>';
+    
+    Object.keys(grouped).sort().forEach(cat => {
+        const plates = grouped[cat].map(v => `<span style="display:inline-block; padding:2px 6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:4px; margin:2px;">${getFlexVal(v, 'PLATE NO')}</span>`).join(' ');
+        html += `
+            <tr>
+                <td style="font-weight:bold; color:var(--text-primary);">${cat}</td>
+                <td style="color:var(--accent-blue);">${grouped[cat].length}</td>
+                <td style="font-size:12px; color:var(--text-muted); line-height: 1.5;">${plates}</td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table></div>';
+    
+    body.innerHTML = html;
+    modal.classList.add('active');
 }
 
 function startGpsSync() {
@@ -530,8 +720,8 @@ function updateVehicleKPIs() {
     if (manpowerTotalEl) manpowerTotalEl.textContent = driverMasterData.length;
 
     const driversCount = driverMasterData.filter(d => {
-        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || '';
-        const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || d["Employee's Name"] || '';
+        const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || getFlexVal(d, "Category") || '';
         return !role.toLowerCase().includes('mechanic') && !name.toLowerCase().includes('mechanic');
     }).length;
     const mechanicsCount = driverMasterData.length - driversCount;
@@ -590,11 +780,25 @@ function renderExpiryDashboard() {
     // Create a flat list of all expiring items
     let expiryItems = [];
     
+    let mulkiyaExpired = 0, mulkiyaExpiring = 0;
+    let insExpired = 0, insExpiring = 0;
+    
     vehicleMasterData.forEach(v => {
         const plate = getFlexVal(v, 'PLATE NO') || 'N/A';
         const cat = getFlexVal(v, 'Category') || 'N/A';
-        const mulkiyaDays = parseInt(getFlexVal(v, 'VALID DAYS')) || 999;
-        const insDays = parseInt(getFlexVal(v, 'VALID DAYS.1')) || parseInt(getFlexVal(v, 'VALID DAYS_1')) || 999;
+        
+        let mVal = getFlexVal(v, 'VALID DAYS');
+        const mulkiyaDays = (mVal === null || mVal === '' || isNaN(parseInt(mVal))) ? 9999 : parseInt(mVal);
+        
+        let iVal = getFlexVal(v, 'VALID DAYS.1') || getFlexVal(v, 'VALID DAYS_1');
+        const insDays = (iVal === null || iVal === '' || isNaN(parseInt(iVal))) ? 9999 : parseInt(iVal);
+
+        // Update counts
+        if (mulkiyaDays < 0) mulkiyaExpired++;
+        else if (mulkiyaDays < 30) mulkiyaExpiring++;
+
+        if (insDays < 0) insExpired++;
+        else if (insDays < 30) insExpiring++;
 
         // Mulkiya
         if (mulkiyaDays < 30) {
@@ -617,6 +821,17 @@ function renderExpiryDashboard() {
             });
         }
     });
+
+    // Populate Highlight Summary
+    const meEl = document.getElementById('mulkiya-expired-count');
+    if (meEl) meEl.textContent = mulkiyaExpired;
+    const msEl = document.getElementById('mulkiya-expiring-count');
+    if (msEl) msEl.textContent = mulkiyaExpiring;
+    
+    const ieEl = document.getElementById('insurance-expired-count');
+    if (ieEl) ieEl.textContent = insExpired;
+    const isEl = document.getElementById('insurance-expiring-count');
+    if (isEl) isEl.textContent = insExpiring;
 
     // Filter by type
     if (currentExpiryFilter !== 'all') {
@@ -648,6 +863,64 @@ function renderExpiryDashboard() {
     }
 }
 
+function getVehicleIcon(gpsRegistration, isIgnitionOn, speed) {
+    let iconClass = 'fa-truck'; // default Trailer Head
+    const isMoving = speed > 0;
+    
+    if (gpsRegistration && vehicleMasterData && vehicleMasterData.length > 0) {
+        const search = String(gpsRegistration).toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (search.length >= 3) {
+            for (const v of vehicleMasterData) {
+                const p = (v['PLATE NO'] || v['plate_no'] || v['PLATE_NO'] || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (p && (p === search || (p.length >= 4 && search.length >= 4 && (p.includes(search) || search.includes(p))))) {
+                    const cat = (getFlexVal(v, 'Category') || getFlexVal(v, 'VEHICLE TYPE') || '').toLowerCase();
+                    if (cat.includes('car')) iconClass = 'fa-car';
+                    else if (cat.includes('pick up') || cat.includes('pickup')) iconClass = 'fa-truck-pickup';
+                    else if (cat.includes('bus')) iconClass = 'fa-bus';
+                    else if (cat.includes('van')) iconClass = 'fa-shuttle-van';
+                    else if (cat.includes('forklift')) iconClass = 'fa-tractor';
+                    else if (cat.includes('trailer bogie')) iconClass = 'fa-trailer';
+                    break;
+                }
+            }
+        }
+    }
+    
+    const statusClass = isIgnitionOn ? (isMoving ? 'moving' : 'idle') : 'offline';
+    
+    return L.divIcon({
+        className: 'custom-leaflet-icon',
+        html: `<div class="custom-marker ${statusClass}"><i class="fas ${iconClass}"></i></div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        tooltipAnchor: [15, 0],
+        popupAnchor: [0, -15]
+    });
+}
+
+function findGpsMatch(plateStr, dataMap) {
+    if (!plateStr || !dataMap) return null;
+    const str = String(plateStr);
+    
+    // Exact match first
+    if (dataMap[str]) return dataMap[str];
+    
+    // Fuzzy match
+    const search = str.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!search || search.length < 3) return null;
+
+    for (const [key, val] of Object.entries(dataMap)) {
+        const cleanKey = String(key).toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (!cleanKey) continue;
+        
+        if (cleanKey === search || 
+           (cleanKey.length >= 4 && search.length >= 4 && (cleanKey.includes(search) || search.includes(cleanKey)))) {
+            return val;
+        }
+    }
+    return null;
+}
+
 function renderFleetGrid(categoryFilter = null) {
     const fleetGrid = document.querySelector('.fleet-grid');
     if (!fleetGrid) return;
@@ -659,6 +932,24 @@ function renderFleetGrid(categoryFilter = null) {
     // If no category filter, show folders
     if (vehicleMasterData.length > 0) {
         console.log("Rendering Fleet Grid with Data keys:", Object.keys(vehicleMasterData[0]));
+    }
+    
+    // GPS Tracked Virtual Folder
+    const gpsTrackedVehicles = vehicleMasterData.filter(v => findGpsMatch(getFlexVal(v, 'PLATE NO'), gpsData) !== null);
+    if (gpsTrackedVehicles.length > 0) {
+        const gpsFolderCard = `
+            <div class="folder-card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);" onclick="renderCategoryVehicles('gps_monitored')">
+                <div class="folder-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <div class="folder-info">
+                    <div class="folder-name">GPS Monitored</div>
+                    <div class="folder-count">${gpsTrackedVehicles.length} Vehicles</div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        `;
+        fleetGrid.insertAdjacentHTML('beforeend', gpsFolderCard);
     }
 
     // Generate unique categories (Super Robust Case)
@@ -707,10 +998,18 @@ function renderCategoryVehicles(categoryLower) {
     if (!grid) return;
     grid.innerHTML = '';
     
-    const vehicles = vehicleMasterData.filter(v => {
-        const val = getFlexVal(v, 'Category') || 'Other';
-        return val.toString().trim().toLowerCase() === categoryLower;
-    });
+    let vehicles = [];
+    if (categoryLower === 'gps_monitored') {
+        vehicles = vehicleMasterData.filter(v => {
+            const plate = getFlexVal(v, 'PLATE NO');
+            return findGpsMatch(plate, gpsData) !== null;
+        });
+    } else {
+        vehicles = vehicleMasterData.filter(v => {
+            const val = getFlexVal(v, 'Category') || 'Other';
+            return val.toString().trim().toLowerCase() === categoryLower;
+        });
+    }
     
     // Add Back button
     const backBtn = `
@@ -721,77 +1020,119 @@ function renderCategoryVehicles(categoryLower) {
     `;
     grid.insertAdjacentHTML('beforeend', backBtn);
     
-    vehicles.forEach(v => {
-        const plate = getFlexVal(v, 'PLATE NO');
-        const account = getFlexVal(v, 'Account') || 'N/A';
-        const insuranceExpiry = getFlexVal(v, 'INSURANCE EXP DATE');
-        const mulkiyaExpiry = getFlexVal(v, 'MULKIYA EXP DATE');
-        const insuranceDays = parseInt(getFlexVal(v, 'VALID DAYS.1')) || 999;
-        const mulkiyaDays = parseInt(getFlexVal(v, 'VALID DAYS')) || 999;
+    if (categoryLower === 'gps_monitored') {
+        const grouped = {};
+        vehicles.forEach(v => {
+            const cat = (getFlexVal(v, 'Category') || 'Other').toString().trim();
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(v);
+        });
         
-        const insuranceStatus = 
-            insuranceDays < 0 ? 'expired' : 
-            insuranceDays < 30 ? 'expiring' : 'valid';
-            
-        const mulkiyaStatus = 
-            mulkiyaDays < 0 ? 'expired' : 
-            mulkiyaDays < 30 ? 'expiring' : 'valid';
+        const sortedCats = Object.keys(grouped).sort();
+        sortedCats.forEach(catName => {
+            const subhead = `
+                <div style="grid-column: 1 / -1; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+                    <h3 style="color: var(--text-primary); margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                        ${catName} <span style="font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 12px;">${grouped[catName].length} Vehicles</span>
+                    </h3>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', subhead);
+            grouped[catName].forEach(v => grid.insertAdjacentHTML('beforeend', generateVehicleCardHTML(v)));
+        });
+    } else {
+        vehicles.forEach(v => grid.insertAdjacentHTML('beforeend', generateVehicleCardHTML(v)));
+    }
+}
 
-        // GPS status check
-        const live = gpsData[plate];
-        let gpsStatusHtml = `
+function generateVehicleCardHTML(v) {
+    const plate = getFlexVal(v, 'PLATE NO');
+    const account = getFlexVal(v, 'Account') || 'N/A';
+    const vCategory = getFlexVal(v, 'Category') || 'Other';
+    const insuranceExpiry = getFlexVal(v, 'INSURANCE EXP DATE');
+    const mulkiyaExpiry = getFlexVal(v, 'MULKIYA EXP DATE');
+    const insuranceDays = parseInt(getFlexVal(v, 'VALID DAYS.1')) || 999;
+    const mulkiyaDays = parseInt(getFlexVal(v, 'VALID DAYS')) || 999;
+    
+    const insuranceStatus = 
+        insuranceDays < 0 ? 'expired' : 
+        insuranceDays < 30 ? 'expiring' : 'valid';
+        
+    const mulkiyaStatus = 
+        mulkiyaDays < 0 ? 'expired' : 
+        mulkiyaDays < 30 ? 'expiring' : 'valid';
+
+    // GPS status check
+    const live = findGpsMatch(plate, gpsData);
+    let gpsStatusHtml = `
+        <div style="display:flex; gap:8px; align-items:center;">
             <div class="gps-status-badge offline">
                 <i class="fas fa-satellite-dish"></i> 
                 <span>GPS Offline</span>
             </div>
-        `;
+            <!-- Always show Map button even if offline, falls back to static location -->
+            <button class="btn btn-secondary btn-icon" style="padding: 4px 8px; border-radius:4px; font-size:12px; background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3);" onclick="event.stopPropagation(); showVehicleDetail('${plate}')" title="View Map">
+                <i class="fas fa-map-marker-alt"></i> Map
+            </button>
+        </div>
+    `;
 
-        if (live) {
-            const moving = live.ignition === 'on' || live.ignition === true;
-            gpsStatusHtml = `
-                <div class="gps-status-badge ${moving ? 'moving' : 'idle'}">
+    if (live) {
+        const isIgnitionOn = live.ignition === 'on' || live.ignition === true;
+        const moving = isIgnitionOn && live.speed > 0;
+        const statusClass = isIgnitionOn ? (moving ? 'moving' : 'idle') : 'offline';
+        const statusText = isIgnitionOn ? (moving ? 'Moving' : 'Idle') : 'Ignition Off';
+        
+        gpsStatusHtml = `
+            <div style="display:flex; gap:8px; align-items:center;">
+                <div class="gps-status-badge ${statusClass}">
                     <i class="fas fa-satellite"></i> 
-                    <span>${moving ? 'Moving' : 'Idle'}</span>
+                    <span>${statusText}</span>
                     ${moving && live.speed ? `<span class="speed">${live.speed} km/h</span>` : ''}
                 </div>
-            `;
-        }
-
-        const card = `
-            <div class="vehicle-card" onclick="showVehicleDetail('${plate}')">
-                <div class="vehicle-card-header">
-                    <div class="plate-number">${plate}</div>
-                    <div class="status-indicator">
-                        <span class="status-dot ${insuranceStatus}" title="Insurance: ${insuranceStatus}"></span>
-                        <span class="status-dot ${mulkiyaStatus}" title="Mulkiya: ${mulkiyaStatus}"></span>
-                    </div>
-                </div>
-                <div class="account-name">${account}</div>
-                <div class="vehicle-card-body">
-                    ${gpsStatusHtml}
-                    <div class="info-row">
-                        <i class="fas fa-shield-alt"></i>
-                        <div class="info-content">
-                            <span class="info-label">Insurance</span>
-                            <span class="info-value ${insuranceStatus}">${new Date(insuranceExpiry).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})}</span>
-                        </div>
-                    </div>
-                    <div class="info-row">
-                        <i class="fas fa-file-contract"></i>
-                        <div class="info-content">
-                            <span class="info-label">Registration</span>
-                            <span class="info-value ${mulkiyaStatus}">${new Date(mulkiyaExpiry).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="vehicle-card-footer">
-                    <span class="vehicle-type-tag">${getFlexVal(v, 'VEHICLE TYPE') || 'Truck'}</span>
-                    ${live ? `<span class="odometer-tag">${live.odometer.toLocaleString()} km</span>` : ''}
-                </div>
+                <button class="btn btn-secondary btn-icon" style="padding: 4px 8px; border-radius:4px; font-size:12px; background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3);" onclick="event.stopPropagation(); showVehicleDetail('${plate}')" title="View Map">
+                    <i class="fas fa-map-marker-alt"></i> Map
+                </button>
             </div>
         `;
-        grid.insertAdjacentHTML('beforeend', card);
-    });
+    }
+
+    return `
+        <div class="vehicle-card" onclick="showVehicleDetail('${plate}')">
+            <div class="vehicle-card-header">
+                <div style="display:flex; align-items:center; gap: 8px; flex-wrap:wrap;">
+                    <div class="plate-number">${plate}</div>
+                    <span style="padding: 2px 6px; font-size: 10px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1);">${vCategory}</span>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot ${insuranceStatus}" title="Insurance: ${insuranceStatus}"></span>
+                    <span class="status-dot ${mulkiyaStatus}" title="Mulkiya: ${mulkiyaStatus}"></span>
+                </div>
+            </div>
+            <div class="account-name">${account}</div>
+            <div class="vehicle-card-body">
+                ${gpsStatusHtml}
+                <div class="info-row">
+                    <i class="fas fa-shield-alt"></i>
+                    <div class="info-content">
+                        <span class="info-label">Insurance</span>
+                        <span class="info-value ${insuranceStatus}">${new Date(insuranceExpiry).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})}</span>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-file-contract"></i>
+                    <div class="info-content">
+                        <span class="info-label">Registration</span>
+                        <span class="info-value ${mulkiyaStatus}">${new Date(mulkiyaExpiry).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="vehicle-card-footer">
+                <span class="vehicle-type-tag">${getFlexVal(v, 'VEHICLE TYPE') || 'Truck'}</span>
+                ${live ? `<span class="odometer-tag">${live.odometer.toLocaleString()} km</span>` : ''}
+            </div>
+        </div>
+    `;
 }
 
 function backToCategories() {
@@ -855,12 +1196,19 @@ function renderStoredTrips() {
     tbody.insertAdjacentHTML('afterbegin', html);
 }
 
+function safeFormatDateString(dateStr) {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    return d.toLocaleDateString('en-GB');
+}
+
 function findVehicleByPlate(plateNo) {
     if (!plateNo) return null;
-    const searchPlate = plateNo.toString().toUpperCase();
+    const searchPlate = plateNo.toString().toUpperCase().replace(/[^A-Z0-9]/g, '');
     return vehicleMasterData.find(v => {
-        const p = v['PLATE NO'] || v['plate_no'] || v['PLATE_NO'] || '';
-        return p.toString().toUpperCase() === searchPlate || p.toString().toUpperCase().includes(searchPlate);
+        const p = (v['PLATE NO'] || v['plate_no'] || v['PLATE_NO'] || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        return p === searchPlate || (p.length >= 4 && searchPlate.length >= 4 && (p.includes(searchPlate) || searchPlate.includes(p)));
     });
 }
 
@@ -870,7 +1218,7 @@ function showVehicleDetail(plateNo) {
 
     const plate = vehicle['PLATE NO'] || vehicle['plate_no'] || plateNo;
 
-    const detailsContainer = document.getElementById('vehicle-details-content');
+    const detailsContainer = document.getElementById('modal-vehicle-details');
     if (!detailsContainer) return;
     
     detailsContainer.innerHTML = `
@@ -886,14 +1234,14 @@ function showVehicleDetail(plateNo) {
         <div class="detail-card glass-effect">
             <div class="detail-card-header"><h4>Registration / Mulkiya</h4></div>
             <ul class="detail-list">
-                <li><span class="label">Expiry Date</span> <span class="value">${new Date(vehicle['MULKIYA EXP DATE']).toLocaleDateString('en-GB')}</span></li>
+                <li><span class="label">Expiry Date</span> <span class="value">${safeFormatDateString(vehicle['MULKIYA EXP DATE'])}</span></li>
                 <li><span class="label">Validity</span> <span class="value ${vehicle['VALID DAYS'] < 30 ? 'text-danger' : 'text-success'}">${vehicle['VALID DAYS']} Days</span></li>
             </ul>
         </div>
         <div class="detail-card glass-effect">
             <div class="detail-card-header"><h4>Insurance Details</h4></div>
             <ul class="detail-list">
-                <li><span class="label">Expiry Date</span> <span class="value">${new Date(vehicle['INSURANCE EXP DATE']).toLocaleDateString('en-GB')}</span></li>
+                <li><span class="label">Expiry Date</span> <span class="value">${safeFormatDateString(vehicle['INSURANCE EXP DATE'])}</span></li>
                 <li><span class="label">Validity</span> <span class="value ${vehicle['VALID DAYS.1'] < 30 ? 'text-danger' : 'text-success'}">${vehicle['VALID DAYS.1']} Days</span></li>
             </ul>
         </div>
@@ -902,8 +1250,71 @@ function showVehicleDetail(plateNo) {
         </div>
     `;
 
-    modal.classList.add('active');
+    const modal = document.getElementById('vehicle-modal');
+    if (modal) modal.classList.add('active');
     updateVehicleModalGpsInfo(plateNo);
+}
+
+function updateVehicleModalGpsInfo(plateNo) {
+    const container = document.getElementById('modal-gps-info');
+    if (!container) return;
+
+    const live = findGpsMatch(plateNo, gpsData);
+    if (!live) {
+        container.innerHTML = `
+            <div class="detail-card glass-effect" style="border-color: rgba(239, 68, 68, 0.3);">
+                <div class="detail-card-header"><h4 style="color:var(--accent-red)"><i class="fas fa-satellite-dish"></i> GPS Tracking (Offline)</h4></div>
+                <div style="padding: 15px; text-align:center; color: var(--text-muted);">
+                    No live GPS data available for this vehicle.
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    const lat = live.location ? parseFloat(live.location.latitude) : NaN;
+    const lng = live.location ? parseFloat(live.location.longitude) : NaN;
+    const address = live.location && live.location.position_description ? live.location.position_description : 'N/A';
+    const isIgnitionOn = live.ignition === 'on' || live.ignition === true;
+    const statusText = isIgnitionOn ? (live.speed > 0 ? 'Moving' : 'Idle') : 'Ignition Off';
+    const speedText = live.speed > 0 ? `${live.speed} km/h` : '0 km/h';
+
+    container.innerHTML = `
+        <div class="detail-card glass-effect" style="border-color: rgba(59, 130, 246, 0.3);">
+            <div class="detail-card-header"><h4 style="color:var(--accent-blue)"><i class="fas fa-satellite"></i> Live GPS Feed</h4></div>
+            <ul class="detail-list">
+                <li><span class="label">Status</span> <span class="value" style="color: ${isIgnitionOn ? (live.speed > 0 ? 'var(--accent-green)' : 'var(--accent-orange)') : 'var(--text-muted)'}; font-weight:600;">${statusText}</span></li>
+                <li><span class="label">Speed</span> <span class="value">${speedText}</span></li>
+                <li><span class="label">Location</span> <span class="value" style="font-size: 11px; max-width: 250px;">${address}</span></li>
+                <li><span class="label">Odometer</span> <span class="value">${live.odometer ? live.odometer.toLocaleString() + ' km' : 'N/A'}</span></li>
+            </ul>
+            ${(!isNaN(lat) && !isNaN(lng)) ? `
+                <div style="margin-top: 15px; border-radius: 8px; overflow: hidden; height: 180px; width: 100%; position: relative;" id="modal-mini-map"></div>
+            ` : ''}
+        </div>
+    `;
+
+    // Render Leaflet Map
+    if (!isNaN(lat) && !isNaN(lng)) {
+        setTimeout(() => {
+            const mapEl = document.getElementById('modal-mini-map');
+            if (!mapEl) return;
+            
+            // Clean up old map instance if it exists
+            const containerHtml = mapEl.parentNode;
+            mapEl.remove();
+            containerHtml.insertAdjacentHTML('beforeend', '<div style="border-radius: 8px; overflow: hidden; height: 180px; width: 100%; border: 1px solid rgba(255,255,255,0.1);" id="modal-mini-map"></div>');
+            
+            const miniMap = L.map('modal-mini-map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(miniMap);
+            
+            const customIcon = getVehicleIcon(plateNo, isIgnitionOn, live.speed || 0);
+            L.marker([lat, lng], { icon: customIcon }).addTo(miniMap)
+                .bindTooltip(plateNo, { permanent: true, direction: 'right', className: 'vehicle-tooltip', offset: [5, 0] });
+        }, 150);
+    }
 }
 
 function closeVehicleModal() {
@@ -913,8 +1324,9 @@ function closeVehicleModal() {
 
 // --- Driver Trip Logic ---
 let tripInterval;
+let activeTripId = null; // To track the ID of the ongoing trip in Supabase
 
-function toggleTrip(start) {
+async function toggleTrip(start) {
     const startBtn = document.getElementById('btn-start-trip');
     const stopBtn = document.getElementById('btn-stop-trip');
     const badge = document.getElementById('driver-status-badge');
@@ -923,61 +1335,192 @@ function toggleTrip(start) {
     const fromInput = document.getElementById('trip-from');
     const toInput = document.getElementById('trip-to');
     const entryForm = document.getElementById('trip-entry-form');
+    const gpsIndicator = document.getElementById('gps-indicator');
+    const gpsCoordsPanel = document.getElementById('gps-coords');
 
     if (start) {
-        // Validate inputs
-        if (!fromInput.value.trim() || !toInput.value.trim()) {
-            alert("Please enter both 'From' and 'To' locations before starting the trip.");
+        // 1. Validate inputs
+        const fromVal = fromInput.value.trim();
+        const toVal = toInput.value.trim();
+        if (!fromVal || !toVal) {
+            alert("Please select both 'From' and 'To' locations before starting the trip.");
             return;
         }
 
-        startBtn.style.display = 'none';
-        stopBtn.style.display = 'flex';
-        badge.className = 'driver-status-badge online';
-        badge.textContent = 'In Transit';
-        entryForm.style.display = 'none'; // hide inputs during trip
+        // 2. UI Feedback
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+        startBtn.disabled = true;
 
-        // Use manual entry for the route
-        const routeText = `${fromInput.value.trim()} → ${toInput.value.trim()}`;
+        // 3. Capture Start GPS
+        let startLat = null, startLng = null;
+        try {
+            const pos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+            });
+            startLat = pos.coords.latitude;
+            startLng = pos.coords.longitude;
+            gpsIndicator.textContent = 'GPS Active (Started)';
+            gpsCoordsPanel.textContent = `Lat: ${startLat.toFixed(4)} | Lng: ${startLng.toFixed(4)}`;
+        } catch (err) {
+            console.warn("Browser GPS failed, trying Cartrack data...", err);
+            const live = gpsData[currentUser.id];
+            if (live && live.location) {
+                startLat = live.location.latitude;
+                startLng = live.location.longitude;
+            }
+        }
 
-        // Get live odometer if available
-        const live = gpsData[currentUser.id];
-        const startOdo = live ? live.odometer : '---';
+        // 4. Create Trip in Supabase
+        try {
+            const tripData = {
+                driver_id: currentUser.empId || 'Unknown',
+                driver_name: currentUser.name || 'Unknown',
+                vehicle_id: currentUser.id || 'Unknown',
+                from_loc: fromVal,
+                to_dest: toVal,
+                start_lat: startLat,
+                start_lng: startLng,
+                start_odometer: gpsData[currentUser.id]?.odometer || 0,
+                status: 'In Transit'
+            };
 
-        // Log trip to local storage for Admin to see
-        const newTrip = {
-            id: 'TRP-' + Math.floor(2600 + Math.random() * 100),
-            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-            vehicle: `Truck - ${currentUser.id}`,
-            driver: currentUser.name,
-            route: routeText,
-            statusClass: 'in-transit',
-            statusText: 'In Transit',
-            revenue: '---',
-            startOdo: startOdo
-        };
-        saveStoredTrip(newTrip);
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/trips`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(tripData)
+            });
 
-        // Start simulated GPS
-        tripInterval = setInterval(updateSimulatedGPS, 5000);
-        updateSimulatedGPS();
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Failed to create trip record: ${errText}`);
+            }
+
+            const result = await response.json();
+            activeTripId = result[0]?.id;
+            console.log("Trip started successfully in Supabase. ID:", activeTripId);
+
+            // Update UI
+            startBtn.style.display = 'none';
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Trip';
+            stopBtn.style.display = 'flex';
+            badge.className = 'driver-status-badge online';
+            badge.textContent = 'In Transit';
+            entryForm.style.display = 'none';
+
+            // Log locally for admin view (fallback/instant update)
+            const newTripLocal = {
+                id: activeTripId || ('TRP-' + Math.floor(Math.random() * 1000)),
+                date: new Date().toLocaleDateString('en-GB'),
+                vehicle: currentUser.id,
+                driver: currentUser.name,
+                route: `${fromVal} → ${toVal}`,
+                statusClass: 'in-transit',
+                statusText: 'In Transit',
+                revenue: '---'
+            };
+            saveStoredTrip(newTripLocal);
+            renderStoredTrips();
+
+        } catch (error) {
+            console.error("Critical error starting trip:", error);
+            alert("Could not start trip in database. Please check your connectivity and ensure the 'trips' table exists.");
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Trip';
+            return;
+        }
+
+        // Start simulated GPS updates for UI
+        tripInterval = setInterval(updateSimulatedGPS, 10000);
+
     } else {
+        // ---- END TRIP ----
+        stopBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ending...';
+        stopBtn.disabled = true;
+
+        // 1. Capture End GPS
+        let endLat = null, endLng = null;
+        try {
+            const pos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+            });
+            endLat = pos.coords.latitude;
+            endLng = pos.coords.longitude;
+        } catch (err) {
+            const live = gpsData[currentUser.id];
+            if (live && live.location) {
+                endLat = live.location.latitude;
+                endLng = live.location.longitude;
+            }
+        }
+
+        // 2. Calculate Rate (Tip)
+        const fromVal = fromInput.value;
+        const toVal = toInput.value;
+        const rateRecord = tripTicketRates.find(r => 
+            r.from.toLowerCase() === fromVal.toLowerCase() && 
+            r.to.toLowerCase() === toVal.toLowerCase()
+        );
+        const finalRate = rateRecord ? rateRecord.rate : 0;
+
+        // 3. Update Trip in Supabase
+        if (activeTripId) {
+            try {
+                const updateData = {
+                    end_time: new Date().toISOString(),
+                    end_lat: endLat,
+                    end_lng: endLng,
+                    end_odometer: gpsData[currentUser.id]?.odometer || 0,
+                    rate: finalRate,
+                    status: 'Completed'
+                };
+
+                await fetch(`${SUPABASE_URL}/rest/v1/trips?id=eq.${activeTripId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                console.log("Trip marked as completed in Supabase.");
+            } catch (error) {
+                console.error("Error updating trip record:", error);
+            }
+        }
+
+        // 4. UI Reset
         startBtn.style.display = 'flex';
         stopBtn.style.display = 'none';
+        stopBtn.disabled = false;
+        stopBtn.innerHTML = '<i class="fas fa-stop"></i> End Trip';
+        
         badge.className = 'driver-status-badge offline';
         badge.textContent = 'Offline';
-        entryForm.style.display = 'block'; // show inputs again for the next trip
+        entryForm.style.display = 'block';
 
-        // Clear inputs for the next trip
+        // Update local logs
+        updateStoredTripStatus(currentUser.id, 'completed', 'Completed');
+        renderStoredTrips();
+
+        // Clear state
+        activeTripId = null;
+        clearInterval(tripInterval);
+        gpsIndicator.textContent = 'Tracking stopped.';
+        gpsCoordsPanel.textContent = '--- | ---';
+        
+        // Show success summary
+        alert(`Trip Completed Successfully!\nRoute: ${fromVal} → ${toVal}\ncalculated Rate: AED ${finalRate}`);
+        
+        // Reset dropdowns
         fromInput.value = '';
         toInput.value = '';
-
-        // Update local storage status
-        updateStoredTripStatus(currentUser.id, 'completed', 'Completed');
-
-        clearInterval(tripInterval);
-        document.getElementById('gps-indicator').textContent = 'Tracking stopped.';
-        document.getElementById('gps-coords').textContent = '--- | ---';
     }
 }
 
@@ -1010,6 +1553,7 @@ function updateSimulatedGPS() {
 
 // --- Logout ---
 function logout() {
+    document.body.classList.remove('mobile-view');
     // Clear user data
     currentUser = null;
     currentRole = null;
@@ -1078,6 +1622,144 @@ function showSection(sectionId) {
     if (sectionId === 'reports') initReportCharts();
     if (sectionId === 'fleet') renderFleetGrid();
     if (sectionId === 'manpower') renderManpowerTable();
+    if (sectionId === 'tracker') {
+        initTracker();
+        // Redraw markers from cached gpsData immediately if they weren't drawn yet
+        setTimeout(() => {
+            if (mainMap) {
+                mainMap.invalidateSize();
+                for (const plate in gpsData) {
+                    const v = gpsData[plate];
+                    // Verify it is a valid registration and not the duplicated suffix key
+                    if (v.registration === plate) {
+                        const lat = v.location ? parseFloat(v.location.latitude) : NaN;
+                        const lng = v.location ? parseFloat(v.location.longitude) : NaN;
+                        const address = v.location ? v.location.position_description : '';
+                        const isIgnitionOn = v.ignition === 'on' || v.ignition === true;
+                        const statusStr = isIgnitionOn ? (v.speed > 0 ? 'Moving' : 'Idle') : 'Ignition Off';
+                        const customIcon = getVehicleIcon(v.registration, isIgnitionOn, v.speed || 0);
+                        
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            if (!markers[v.registration]) {
+                                markers[v.registration] = L.marker([lat, lng], { icon: customIcon }).addTo(mainMap)
+                                    .bindPopup(`<div style="cursor:pointer;" onclick="showVehicleDetail('${v.registration}')"><b>${v.registration}</b><br>${address}<br>Status: ${statusStr} <br><br><span style="color:var(--accent-blue)">Click to view details</span></div>`)
+                                    .bindTooltip(v.registration, { permanent: true, direction: 'right', className: 'vehicle-tooltip', offset: [5, 0] });
+                            } else {
+                                markers[v.registration].setLatLng([lat, lng]).setIcon(customIcon)
+                                    .getPopup().setContent(`<div style="cursor:pointer;" onclick="showVehicleDetail('${v.registration}')"><b>${v.registration}</b><br>${address}<br>Status: ${statusStr} <br><br><span style="color:var(--accent-blue)">Click to view details</span></div>`);
+                            }
+                        }
+                    }
+                }
+                const group = new L.featureGroup(Object.values(markers));
+                if (group.getLayers().length > 0) {
+                    mainMap.fitBounds(group.getBounds(), { padding: [30, 30] });
+                }
+            }
+        }, 300); // Slight delay to ensure DOM is fully visible before resizing leaflet
+    }
+    
+    if (sectionId === 'certification') {
+        renderCategoryCertificates();
+    }
+}
+
+// --- Category Certificates Logic ---
+function renderCategoryCertificates() {
+    const tbody = document.getElementById('cert-category-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    
+    // Sort array by expiry ascending
+    const sortedCerts = [...categoryCertificates].sort((a,b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+    
+    let activeCerts = 0;
+    let expiringSoon = 0;
+
+    sortedCerts.forEach(cert => {
+        const daysLeft = Math.ceil((new Date(cert.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+        
+        let statusClass = 'valid';
+        let statusText = 'Valid';
+        
+        if (daysLeft < 0) {
+            statusClass = 'inactive'; // red
+            statusText = 'Expired';
+        } else if (daysLeft <= 30) {
+            statusClass = 'expiring'; // orange
+            statusText = 'Expiring Soon';
+            expiringSoon++;
+        } else {
+            activeCerts++;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td style="font-weight:600; color:var(--text-primary)">${cert.category}</td>
+            <td>${cert.name}</td>
+            <td>${new Date(cert.issueDate).toLocaleDateString('en-GB')}</td>
+            <td>${new Date(cert.expiryDate).toLocaleDateString('en-GB')}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>
+                <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px" onclick="alert('Viewing Certificate: ${cert.name}')"><i class="fas fa-eye"></i> View</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    if (sortedCerts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">No certificates found.</td></tr>';
+    }
+
+    // Update KPIs
+    const kActive = document.getElementById('cert-kpi-active');
+    const kExpiring = document.getElementById('cert-kpi-expiring');
+    const kTotal = document.getElementById('cert-kpi-total');
+    
+    if (kActive) kActive.textContent = activeCerts;
+    if (kExpiring) kExpiring.textContent = expiringSoon;
+    if (kTotal) kTotal.textContent = sortedCerts.length;
+}
+
+function openCertUploadModal() {
+    const modal = document.getElementById('cert-upload-modal');
+    if (modal) {
+        document.getElementById('cert-upload-form').reset();
+        modal.classList.add('active');
+    }
+}
+
+function closeCertUploadModal() {
+    const modal = document.getElementById('cert-upload-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function handleCertUpload(event) {
+    event.preventDefault();
+    
+    const cat = document.getElementById('cert-category').value;
+    const name = document.getElementById('cert-name').value;
+    const expiry = document.getElementById('cert-expiry').value;
+    const issueObj = new Date(); // Issue date today as default for new proxy uploads
+    
+    const newCert = {
+        id: Date.now(),
+        category: cat,
+        name: name,
+        issueDate: issueObj.toISOString().split('T')[0],
+        expiryDate: expiry,
+        status: 'Valid', 
+        file: null
+    };
+
+    categoryCertificates.push(newCert);
+    
+    closeCertUploadModal();
+    renderCategoryCertificates();
+    
+    // Show a success toast or alert
+    alert(`Successfully uploaded ${name} for ${cat}.`);
 }
 
 function switchAssetHubTab(btn, type) {
@@ -1100,6 +1782,76 @@ function switchTab(el, section) {
     const tabs = el.parentElement.querySelectorAll('.tab');
     tabs.forEach(t => t.classList.remove('active'));
     el.classList.add('active');
+}
+
+function switchTripTab(el, type) {
+    switchTab(el, 'trips');
+    
+    const tripTable = document.querySelector('#section-trips .data-table-wrapper:not(#trip-rates-container)');
+    const ratesTable = document.getElementById('trip-rates-container');
+    const kpiGrid = document.querySelector('#section-trips .kpi-grid');
+
+    if (type === 'rates') {
+        tripTable.style.display = 'none';
+        kpiGrid.style.display = 'none';
+        ratesTable.style.display = 'block';
+        renderTripRatesTable();
+    } else {
+        tripTable.style.display = 'block';
+        kpiGrid.style.display = 'flex';
+        ratesTable.style.display = 'none';
+    }
+}
+
+function renderTripRatesTable() {
+    const tbody = document.getElementById('trip-rates-tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = tripTicketRates.map(r => `
+        <tr>
+            <td style="font-weight:600">${r.from}</td>
+            <td>${r.to}</td>
+            <td style="color:var(--accent-blue); font-weight:700">AED ${r.rate}</td>
+        </tr>
+    `).join('');
+}
+
+function exportTripRates() {
+    // Basic CSV export
+    let csv = "From Location,To Destination,Rate (AED)\n";
+    tripTicketRates.forEach(r => {
+        csv += `"${r.from}","${r.to}",${r.rate}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'NSGT_Trip_Rates.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function populateLocationDropdowns() {
+    const fromSelect = document.getElementById('trip-from');
+    const toSelect = document.getElementById('trip-to');
+    if (!fromSelect || !toSelect) return;
+
+    // Get unique locations
+    const fromLocs = [...new Set(tripTicketRates.map(r => r.from))].sort();
+    const toLocs = [...new Set(tripTicketRates.map(r => r.to))].sort();
+
+    // Populate From
+    fromSelect.innerHTML = '<option value="">Select From Location</option>' + 
+        fromLocs.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+
+    // Populate To
+    toSelect.innerHTML = '<option value="">Select To Destination</option>' + 
+        toLocs.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+        
+    console.log("Populated driver location dropdowns.");
 }
 
 // ============ CHART.JS CONFIG ============
@@ -1137,15 +1889,37 @@ function initVehicleCharts() {
     if (utilCtx) {
         if (utilCtx._chart) utilCtx._chart.destroy();
 
-        const activeCount = vehicleMasterData.filter(v => v['VALID DAYS'] >= 0 && v['VALID DAYS.1'] >= 0).length;
-        const oosCount = vehicleMasterData.length - activeCount;
+        // Calculate metrics
+        const totalVehicles = vehicleMasterData.length;
+        const activeCount = vehicleMasterData.filter(v => {
+            const insDays = parseInt(getFlexVal(v, 'VALID DAYS.1'));
+            const mulkDays = parseInt(getFlexVal(v, 'VALID DAYS'));
+            return (!isNaN(insDays) && insDays >= 0) && (!isNaN(mulkDays) && mulkDays >= 0);
+        }).length;
+        
+        // Tracked by GPS count
+        const trackedCount = vehicleMasterData.filter(v => findGpsMatch(getFlexVal(v, 'PLATE NO'), gpsData) !== null).length;
+        const untrackedCount = totalVehicles - trackedCount;
+
+        // Update tags
+        const totalTag = document.getElementById('fleet-total-tag');
+        if (totalTag) totalTag.textContent = 'Total Vehicles: ' + totalVehicles;
+
+        const activeTag = document.getElementById('fleet-active-tag');
+        if (activeTag) activeTag.textContent = activeCount;
+
+        const trackedTag = document.getElementById('fleet-tracked-tag');
+        if (trackedTag) trackedTag.textContent = trackedCount;
+
+        const untrackedTag = document.getElementById('fleet-untracked-tag');
+        if (untrackedTag) untrackedTag.textContent = untrackedCount;
 
         utilCtx._chart = new Chart(utilCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Active', 'Expired/OOS'],
+                labels: ['Tracked (GPS)', 'Untracked'],
                 datasets: [{
-                    data: [activeCount, oosCount],
+                    data: [trackedCount, untrackedCount],
                     backgroundColor: [
                         'rgba(16, 185, 129, 0.8)',
                         'rgba(239, 68, 68, 0.8)'
@@ -1156,6 +1930,12 @@ function initVehicleCharts() {
                 }]
             },
             options: {
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        showGpsBreakdownModal(index === 0 ? 'tracked' : 'untracked');
+                    }
+                },
                 responsive: true,
                 maintainAspectRatio: false,
                 cutout: '65%',
@@ -1483,8 +2263,9 @@ function showKPIBreakdown(type) {
             title = "Manpower Roles";
             const mCounts = { 'Drivers': 0, 'Mechanics': 0 };
             driverMasterData.forEach(d => {
-                const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
-                if (role.toLowerCase().includes('mechanic')) mCounts['Mechanics']++;
+                const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || d["Employee's Name"] || '';
+                const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || getFlexVal(d, "Category") || '';
+                if (role.toLowerCase().includes('mechanic') || name.toLowerCase().includes('mechanic')) mCounts['Mechanics']++;
                 else mCounts['Drivers']++;
             });
             breakdownData = Object.entries(mCounts).map(([label, value]) => ({ label, value }));
@@ -1568,14 +2349,14 @@ function renderManpowerTable() {
     let filteredData = driverMasterData;
     if (currentManpowerFilter === 'driver') {
         filteredData = driverMasterData.filter(d => {
-            const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || '';
-            const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+            const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || d["Employee's Name"] || '';
+            const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || getFlexVal(d, "Category") || '';
             return !role.toLowerCase().includes('mechanic') && !name.toLowerCase().includes('mechanic');
         });
     } else if (currentManpowerFilter === 'mechanic') {
         filteredData = driverMasterData.filter(d => {
-            const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || '';
-            const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+            const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || d["Employee's Name"] || '';
+            const role = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || getFlexVal(d, "Category") || '';
             return role.toLowerCase().includes('mechanic') || name.toLowerCase().includes('mechanic');
         });
     } else if (currentManpowerFilter === 'expiring') {
@@ -1583,11 +2364,21 @@ function renderManpowerTable() {
     }
 
     filteredData.forEach(d => {
-        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || 'Unknown Name';
-        const roleStr = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || '';
+        const name = getFlexVal(d, "Name") || getFlexVal(d, "Employee") || d["Employee's Name"] || 'Unknown Name';
+        const roleStr = getFlexVal(d, "Role") || getFlexVal(d, "Designation") || getFlexVal(d, "Category") || 'Driver';
         const isMechanic = roleStr.toLowerCase().includes('mechanic') || name.toLowerCase().includes('mechanic');
         const role = isMechanic ? 'Mechanic' : 'Driver';
-        const empCode = getFlexVal(d, "Emp Code") || getFlexVal(d, "ID") || 'N/A';
+        
+        // Even more robust Emp Code matching
+        let empCodeRaw = getFlexVal(d, "Emp Code") || getFlexVal(d, "Emp_Code") || getFlexVal(d, "ID") || d["Emp Code"] || d["emp_code"] || d["EMP CODE"] || d["Employee Code"];
+        // Try looking through all keys manually just in case
+        if (!empCodeRaw) {
+            const keys = Object.keys(d);
+            const ecKey = keys.find(k => k.toLowerCase().replace(/[^a-z]/g, '').includes('empcode') || k.toLowerCase().replace(/[^a-z]/g, '').includes('employeeid'));
+            if (ecKey) empCodeRaw = d[ecKey];
+        }
+        
+        const empCode = empCodeRaw || 'N/A';
         
         const row = `
             <tr>
