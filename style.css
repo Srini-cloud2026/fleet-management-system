@@ -2192,4 +2192,110 @@ body {
     font-size: 13px;
     color: var(--text-secondary);
 }
+
+/* ============ QR SCANNER STYLES ============ */
+.qr-scan-placeholder {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.qr-scan-placeholder:hover {
+    border-color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.qr-scan-placeholder i {
+    font-size: 40px;
+    color: var(--accent-blue);
+}
+
+.qr-scan-placeholder span {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.scanned-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.scanned-info .info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--accent-blue);
+    font-size: 16px;
+}
+
+.scanned-info .info-details {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px 0;
+    text-align: left;
+    text-decoration: underline;
+    width: fit-content;
+}
+
+#qr-reader {
+    background: #000;
+    border: none !important;
+}
+
+#qr-reader__dashboard_section_csr button {
+    background: var(--accent-blue) !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 15px !important;
+    border-radius: 4px !important;
+    margin: 5px !important;
+    cursor: pointer !important;
+}
+
+#qr-reader__status_span {
+    color: var(--text-muted) !important;
+    font-size: 12px !important;
+}
+
+/* ============ TOAST NOTIFICATION ANIMATION ============ */
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ============ ROLE-BASED NAV ITEMS ============ */
+/* Hide assigner-only items by default; shown once role is confirmed */
+.nav-assigner-only {
+    display: none;
+}
+
+/* ============ ASSIGN VEHICLE CARD HOVER ============ */
+.assign-vehicle-card:hover {
+    border-color: var(--accent-blue) !important;
+    background: rgba(59, 130, 246, 0.06) !important;
+}
+
 

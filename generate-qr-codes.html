@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; padding: 20px; background: #f4f7f6; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .qr-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .plate-no { font-weight: bold; margin-top: 10px; font-size: 16px; color: #333; }
+        .qr-container { display: flex; justify-content: center; margin-bottom: 5px; }
+        
+        @media print {
+            .no-print { display: none; }
+            .qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .qr-card { break-inside: avoid; border: 1px solid #eee; box-shadow: none; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header no-print">
+        <h1>Vehicle QR Code Generator</h1>
+        <p>Total Vehicles: <span id="total-count">0</span></p>
+        <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Print QR Codes</button>
+    </div>
+
+    <div class="qr-grid" id="qr-grid"></div>
+
+    <script>
+        // Data will be injected here
+        const vehicles = []; // To be filled
+
+        async function loadData() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const filterPlate = urlParams.get('plate');
+                const filterCategory = urlParams.get('category');
+
+                console.log('Fetching vehicle_master.json...');
+                const response = await fetch('vehicle_master.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                console.log('Data loaded successfully:', data);
+                
+                if (!data.Sheet1) throw new Error('Invalid data format: Sheet1 missing');
+                
+                let filteredVehicles = data.Sheet1;
+                
+                if (filterCategory) {
+                    filteredVehicles = filteredVehicles.filter(v => {
+                        const cat = v['Category '] || v['category'] || '';
+                        return cat.toLowerCase().includes(filterCategory.toLowerCase());
+                    });
+                }
+                
+                let plateNumbers = filteredVehicles.map(v => v['PLATE NO']).filter(p => p !== undefined && p !== null);
+                
+                if (filterPlate) {
+                    plateNumbers = plateNumbers.filter(p => p.toString().toUpperCase() === filterPlate.toUpperCase());
+                }
+
+                document.getElementById('total-count').textContent = plateNumbers.length;
+                const grid = document.getElementById('qr-grid');
+
+                plateNumbers.forEach((plate, index) => {
+                    try {
+                        const card = document.createElement('div');
+                        card.className = 'qr-card';
+                        
+                        const qrContainer = document.createElement('div');
+                        qrContainer.className = 'qr-container';
+                        card.appendChild(qrContainer);
+                        
+                        const plateLabel = document.createElement('div');
+                        plateLabel.className = 'plate-no';
+                        plateLabel.textContent = plate;
+                        card.appendChild(plateLabel);
+                        
+                        grid.appendChild(card);
+                        
+                        if (typeof QRCode === 'undefined') {
+                            throw new Error('QRCode library not loaded correctly');
+                        }
+
+                        new QRCode(qrContainer, {
+                            text: plate.toString(),
+                            width: 150,
+                            height: 150,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
+                    } catch (err) {
+                        console.error(`Error generating QR for plate ${plate}:`, err);
+                    }
+                });
+            } catch (error) {
+                console.error('Detailed error loading vehicle data:', error);
+                alert(`Error: ${error.message}\n\nPlease check the browser console for details.`);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

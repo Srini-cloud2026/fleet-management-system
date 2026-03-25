@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 
 <body>
@@ -34,22 +35,30 @@
 
             <!-- Driver Login Form -->
             <form id="driver-login-form" class="login-form active" onsubmit="handleLogin(event, 'driver')">
-                <div class="form-group">
-                    <label>Truck ID</label>
-                    <div class="input-with-icon">
+                <div id="qr-reader-container" style="display: none; margin-bottom: 15px;">
+                    <div id="qr-reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+                    <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="stopQrScanner()">Cancel Scan</button>
+                </div>
+
+                <div id="qr-scan-placeholder" class="qr-scan-placeholder" onclick="startQrScanner()">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Tap to Scan Vehicle QR Code</span>
+                </div>
+
+                <div id="scanned-vehicle-info" class="scanned-info" style="display: none;">
+                    <div class="info-header">
                         <i class="fas fa-truck"></i>
-                        <input type="text" id="truck-id" placeholder="e.g. T-1045" value="T-1045" required>
+                        <span id="display-truck-id">T-1045</span>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Passcode</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="driver-passcode" placeholder="Enter driver passcode" value="1234"
-                            required>
+                    <div class="info-details" id="display-vehicle-details">
+                        Volvo FH16 | Trailer Head
                     </div>
+                    <button type="button" class="btn-link" onclick="startQrScanner()">Rescan QR</button>
                 </div>
-                <div class="form-group">
+
+                <input type="hidden" id="truck-id" value="">
+
+                <div class="form-group mt-3">
                     <label>Employee ID <span style="color:var(--accent-red)">*</span></label>
                     <div class="input-with-icon">
                         <i class="fas fa-id-badge"></i>
@@ -63,7 +72,7 @@
                         <input type="text" id="driver-name-input" placeholder="e.g. John Doe">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary login-btn">Login as Driver</button>
+                <button type="submit" class="btn btn-primary login-btn" id="driver-login-btn" disabled>Login as Driver</button>
             </form>
 
             <!-- Admin Login Form -->
@@ -123,6 +132,19 @@
                 <a class="nav-item" onclick="showSection('tracker')" id="nav-tracker">
                     <i class="nav-icon fas fa-map-marked-alt"></i>
                     <span>Live Tracker</span>
+                </a>
+                <a class="nav-item" onclick="showSection('vehicle-requests')" id="nav-vehicle-requests">
+                    <i class="nav-icon fas fa-hand-paper"></i>
+                    <span>Vehicle Requests</span>
+                    <span class="nav-badge" id="req-pending-badge" style="display:none;">0</span>
+                </a>
+                <a class="nav-item nav-assigner-only" onclick="showSection('vehicle-assignment')" id="nav-vehicle-assignment">
+                    <i class="nav-icon fas fa-clipboard-check"></i>
+                    <span>Vehicle Assignment</span>
+                </a>
+                <a class="nav-item nav-assigner-only" onclick="showSection('trip-monitor')" id="nav-trip-monitor">
+                    <i class="nav-icon fas fa-satellite-dish"></i>
+                    <span>Trip Monitor</span>
                 </a>
                 <a class="nav-item" onclick="showSection('attendance')" id="nav-attendance">
                     <i class="nav-icon fas fa-clock"></i>
@@ -450,7 +472,12 @@
                             <h2>Asset Management</h2>
                             <p class="subtitle">Vehicles, insurance, registration, tracking</p>
                         </div>
-                        <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Vehicle</button>
+                        <div style="display: flex; gap: 10px;">
+                            <a href="generate-qr-codes.html" target="_blank" class="btn btn-secondary">
+                                <i class="fas fa-print"></i> Print Vehicle QRs
+                            </a>
+                            <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Vehicle</button>
+                        </div>
                     </div>
                     
                     <div class="tabs mb-4">
@@ -1148,6 +1175,229 @@
                     </div>
                 </section>
 
+                <!-- ==================== VEHICLE REQUESTS ==================== -->
+                <section class="page-section" id="section-vehicle-requests">
+                    <div class="section-header">
+                        <div>
+                            <h2>Vehicle Requests</h2>
+                            <p class="subtitle">Request a vehicle for a trip or view your submitted requests</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openNewRequestForm()"><i class="fas fa-plus"></i> New Request</button>
+                    </div>
+
+                    <!-- New Request Form (hidden by default) -->
+                    <div id="new-request-form-container" style="display:none; margin-bottom:24px;">
+                        <div class="chart-card" style="padding: 24px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;"><i class="fas fa-car" style="color:var(--accent-blue); margin-right:8px;"></i>New Vehicle Request</h3>
+                                <button class="close-modal" onclick="closeNewRequestForm()" style="position:static; font-size:22px;">×</button>
+                            </div>
+                            <form id="vehicle-request-form" onsubmit="submitVehicleRequest(event)">
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                    <div class="form-group">
+                                        <label>Requester Name <span style="color:var(--accent-red)">*</span></label>
+                                        <input type="text" id="req-name" class="status-select" placeholder="Your full name" required style="margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Employee ID <span style="color:var(--accent-red)">*</span></label>
+                                        <input type="text" id="req-empid" class="status-select" placeholder="e.g. EMP-8705" required style="margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>From Location <span style="color:var(--accent-red)">*</span></label>
+                                        <div style="display:flex; gap:8px; margin-top:4px;">
+                                            <input type="text" id="req-from" class="status-select" placeholder="e.g. Abu Dhabi Plant" required style="flex:1;">
+                                            <button type="button" class="btn btn-secondary" style="padding:8px 12px; white-space:nowrap;" onclick="useGpsForRequest()" title="Use current GPS location"><i class="fas fa-map-marker-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>To Destination <span style="color:var(--accent-red)">*</span></label>
+                                        <input type="text" id="req-to" class="status-select" placeholder="e.g. Dubai Port" required style="margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Date Required <span style="color:var(--accent-red)">*</span></label>
+                                        <input type="date" id="req-date" class="status-select" required style="margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Time Required <span style="color:var(--accent-red)">*</span></label>
+                                        <input type="time" id="req-time" class="status-select" required style="margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Vehicle Type Preference</label>
+                                        <select id="req-vtype" class="status-select" style="margin-top:4px;">
+                                            <option value="Any">Any Available</option>
+                                            <option value="Trailer Head">Trailer Head</option>
+                                            <option value="Pick up">Pick Up</option>
+                                            <option value="Car">Car</option>
+                                            <option value="Bus">Bus</option>
+                                            <option value="Van">Van</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Purpose / Notes</label>
+                                        <input type="text" id="req-notes" class="status-select" placeholder="Reason for trip" style="margin-top:4px;">
+                                    </div>
+                                </div>
+                                <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
+                                    <button type="button" class="btn btn-secondary" onclick="closeNewRequestForm()">Cancel</button>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Request</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- My Requests List -->
+                    <div class="data-table-wrapper">
+                        <div class="table-header">
+                            <h3>My Requests</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="loadMyVehicleRequests()"><i class="fas fa-sync"></i> Refresh</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>From → To</th>
+                                    <th>Date / Time</th>
+                                    <th>Vehicle Type</th>
+                                    <th>Assigned Vehicle</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-requests-tbody">
+                                <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">No requests submitted yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ==================== VEHICLE ASSIGNMENT ==================== -->
+                <section class="page-section" id="section-vehicle-assignment">
+                    <div class="section-header">
+                        <div>
+                            <h2>Vehicle Assignment</h2>
+                            <p class="subtitle">Review pending requests and assign available vehicles</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="loadAssignmentBoard()"><i class="fas fa-sync"></i> Refresh Board</button>
+                    </div>
+
+                    <!-- Summary KPIs -->
+                    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
+                        <div class="kpi-card orange">
+                            <div class="kpi-header"><div class="kpi-icon orange"><i class="fas fa-clock"></i></div></div>
+                            <div class="kpi-value" id="assign-kpi-pending">0</div>
+                            <div class="kpi-label">Pending Requests</div>
+                        </div>
+                        <div class="kpi-card green">
+                            <div class="kpi-header"><div class="kpi-icon green"><i class="fas fa-check-circle"></i></div></div>
+                            <div class="kpi-value" id="assign-kpi-available">0</div>
+                            <div class="kpi-label">Available Vehicles</div>
+                        </div>
+                        <div class="kpi-card blue">
+                            <div class="kpi-header"><div class="kpi-icon blue"><i class="fas fa-route"></i></div></div>
+                            <div class="kpi-value" id="assign-kpi-active">0</div>
+                            <div class="kpi-label">Active Trips</div>
+                        </div>
+                        <div class="kpi-card purple">
+                            <div class="kpi-header"><div class="kpi-icon purple"><i class="fas fa-flag-checkered"></i></div></div>
+                            <div class="kpi-value" id="assign-kpi-completed">0</div>
+                            <div class="kpi-label">Completed Today</div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                        <!-- Pending Requests Panel -->
+                        <div class="data-table-wrapper" style="margin:0;">
+                            <div class="table-header">
+                                <h3><i class="fas fa-inbox" style="color:var(--accent-orange); margin-right:8px;"></i>Pending Requests</h3>
+                            </div>
+                            <div id="pending-requests-list" style="padding:0 4px 4px;">
+                                <p style="text-align:center; color:var(--text-muted); padding:30px;">No pending requests.</p>
+                            </div>
+                        </div>
+                        <!-- Available Vehicles Panel -->
+                        <div class="data-table-wrapper" style="margin:0;">
+                            <div class="table-header">
+                                <h3><i class="fas fa-truck" style="color:var(--accent-green); margin-right:8px;"></i>Available Vehicles</h3>
+                            </div>
+                            <div id="available-vehicles-list" style="padding:0 4px 4px;">
+                                <p style="text-align:center; color:var(--text-muted); padding:30px;">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All Requests History -->
+                    <div class="data-table-wrapper" style="margin-top:20px;">
+                        <div class="table-header">
+                            <h3>All Request History</h3>
+                            <div class="tab-group mini">
+                                <button class="tab mini active" onclick="filterAssignHistory(this,'all')">All</button>
+                                <button class="tab mini" onclick="filterAssignHistory(this,'Pending')">Pending</button>
+                                <button class="tab mini" onclick="filterAssignHistory(this,'Assigned')">Assigned</button>
+                                <button class="tab mini" onclick="filterAssignHistory(this,'Completed')">Completed</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Requester</th>
+                                    <th>From → To</th>
+                                    <th>Date / Time</th>
+                                    <th>Assigned Vehicle</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assign-history-tbody">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:30px;">No requests yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ==================== TRIP MONITOR ==================== -->
+                <section class="page-section" id="section-trip-monitor">
+                    <div class="section-header">
+                        <div>
+                            <h2>Trip Monitor</h2>
+                            <p class="subtitle">Live progress of all active vehicle assignments</p>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <span id="monitor-last-refresh" style="font-size:12px; color:var(--text-muted);"></span>
+                            <button class="btn btn-secondary" onclick="loadTripMonitor()"><i class="fas fa-sync"></i> Refresh</button>
+                        </div>
+                    </div>
+
+                    <!-- Summary Strip -->
+                    <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:120px; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:10px; padding:14px 18px; text-align:center;">
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Available</div>
+                            <div style="font-size:26px; font-weight:700; color:var(--accent-blue);" id="mon-available">0</div>
+                        </div>
+                        <div style="flex:1; min-width:120px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:14px 18px; text-align:center;">
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">In Progress</div>
+                            <div style="font-size:26px; font-weight:700; color:var(--accent-orange);" id="mon-inprogress">0</div>
+                        </div>
+                        <div style="flex:1; min-width:120px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:10px; padding:14px 18px; text-align:center;">
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Completed</div>
+                            <div style="font-size:26px; font-weight:700; color:var(--accent-green);" id="mon-completed">0</div>
+                        </div>
+                        <div style="flex:1; min-width:120px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-radius:10px; padding:14px 18px; text-align:center;">
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Assigned</div>
+                            <div style="font-size:26px; font-weight:700; color:#8b5cf6;" id="mon-assigned">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Progress Cards -->
+                    <div id="trip-monitor-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+                        <div style="text-align:center; color:var(--text-muted); padding:60px; grid-column:1/-1;">
+                            <i class="fas fa-satellite-dish" style="font-size:48px; opacity:0.3; display:block; margin-bottom:16px;"></i>
+                            No active trips to monitor.
+                        </div>
+                    </div>
+                </section>
+
             </div><!-- /page-content -->
         </div><!-- /main-content -->
     </div><!-- /app-container -->
@@ -1223,6 +1473,51 @@
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Upload Document</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ VEHICLE ASSIGNMENT MODAL ============ -->
+    <div class="modal-overlay" id="assign-modal">
+        <div class="modal-content glass-modal" style="max-width:600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-clipboard-check" style="color:var(--accent-blue); margin-right:8px;"></i>Assign Vehicle</h3>
+                <button class="close-modal" onclick="closeAssignModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="assign-modal-request-info" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:10px; padding:16px; margin-bottom:20px;"></div>
+                <h4 style="margin-bottom:12px; color:var(--text-primary);"><i class="fas fa-truck" style="color:var(--accent-green); margin-right:6px;"></i>Select Available Vehicle</h4>
+                <div id="assign-modal-vehicles" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-height:300px; overflow-y:auto;"></div>
+                <div style="margin-top:20px;">
+                    <label style="display:block; margin-bottom:6px; font-size:13px; color:var(--text-muted);">Driver Name (Optional)</label>
+                    <input type="text" id="assign-driver-name" class="status-select" placeholder="e.g. Mohammed Ali" style="width:100%;">
+                </div>
+                <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
+                    <button class="btn btn-secondary" onclick="closeAssignModal()">Cancel</button>
+                    <button class="btn btn-primary" id="confirm-assign-btn" onclick="confirmAssignment()" disabled><i class="fas fa-check"></i> Confirm Assignment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ GPS VALIDATION MODAL ============ -->
+    <div class="modal-overlay" id="gps-validate-modal">
+        <div class="modal-content glass-modal" style="max-width:520px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-map-marker-alt" style="color:var(--accent-orange); margin-right:8px;"></i>GPS Start Location Validation</h3>
+                <button class="close-modal" onclick="closeGpsValidateModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="gps-validate-status" style="text-align:center; padding:20px;">
+                    <i class="fas fa-satellite-dish" style="font-size:40px; color:var(--accent-blue);"></i>
+                    <p style="margin-top:12px; color:var(--text-muted);">Acquiring GPS signal...</p>
+                </div>
+                <div id="gps-validate-map" style="height:220px; border-radius:10px; overflow:hidden; margin-top:10px; display:none;"></div>
+                <div id="gps-validate-result" style="margin-top:16px; display:none;"></div>
+                <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
+                    <button class="btn btn-secondary" onclick="closeGpsValidateModal()">Cancel</button>
+                    <button class="btn btn-primary" id="gps-proceed-btn" onclick="proceedAfterGpsValidation()" disabled><i class="fas fa-play"></i> Start Trip</button>
+                </div>
             </div>
         </div>
     </div>

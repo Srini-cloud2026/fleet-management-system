@@ -436,7 +436,7 @@
             "S.NO": 36,
             "PLATE NO": 33184,
             "VEHICLE TYPE": "TRAILER",
-            "MODEL": NaN,
+            "MODEL": null,
             "MULKIYA EXP DATE": "2027-02-01T00:00:00",
             "VALID DAYS": 321,
             "INSURANCE EXP DATE": "2027-03-01T00:00:00",
