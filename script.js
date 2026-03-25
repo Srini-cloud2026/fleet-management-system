@@ -545,6 +545,7 @@ function initTracker() {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mainMap);
     console.log("Tracker Map Initialized.");
+    updateRequesterAvailability();
 }
 
 function generateMockGpsData() {
@@ -554,14 +555,16 @@ function generateMockGpsData() {
         { registration: 'A-5521', location: { latitude: 25.3463, longitude: 55.4209, position_description: 'Sharjah Industrial' }, speed: 0, ignition: 'off', odometer: 45200 }
     ];
     // Also include other vehicles from master data to ensure they appear
-    vehicleMasterData.slice(0, 10).forEach(v => {
+    vehicleMasterData.slice(0, 15).forEach((v, i) => {
         const plate = getFlexVal(v, 'PLATE NO');
         if (plate && !mockData.find(m => m.registration === plate)) {
+            // Alternate statuses for testing
+            const state = i % 3;
             mockData.push({
                 registration: plate,
-                location: { latitude: 25.0 + Math.random(), longitude: 55.0 + Math.random(), position_description: 'Simulated Location' },
-                speed: 0,
-                ignition: 'off',
+                location: { latitude: 25.0 + Math.random() * 0.5, longitude: 55.0 + Math.random() * 0.5, position_description: 'Simulated Area ' + (i+1) },
+                speed: state === 1 ? 40 : 0,
+                ignition: state === 0 ? 'off' : 'on',
                 odometer: Math.floor(Math.random() * 100000)
             });
         }
@@ -631,6 +634,11 @@ async function fetchGpsData() {
         }
         gpsData = newGpsData;
         const assetCount = Object.keys(newGpsData).length;
+        
+        // Update vehicle status displays
+        renderAvailableVehiclesPanel();
+        updateRequesterAvailability();
+        updateAssignKPIs();
         
         if (statusLabel) {
             if (assetCount > 0) {
@@ -2825,6 +2833,23 @@ function renderPendingRequests() {
     `).join('');
 }
 
+function getVehicleLiveStatus(plate) {
+    const data = gpsData[plate];
+    if (!data) return { label: 'Available', color: '#94a3b8', bg: 'rgba(148,163,184,0.1)', icon: 'circle', location: 'No GPS data' };
+    
+    const isIgnitionOn = data.ignition === 'on' || data.ignition === true;
+    const speed = data.speed || 0;
+    const loc = data.location?.position_description || 'Location hidden';
+
+    if (!isIgnitionOn) {
+        return { label: 'Available', color: '#94a3b8', bg: 'rgba(148,163,184,0.1)', icon: 'power-off', location: loc };
+    } else if (speed > 0) {
+        return { label: 'Active', color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: 'route', location: loc };
+    } else {
+        return { label: 'Idle / Parking', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', icon: 'parking', location: loc };
+    }
+}
+
 function renderAvailableVehiclesPanel() {
     const container = document.getElementById('available-vehicles-list');
     if (!container) return;
@@ -2835,7 +2860,7 @@ function renderAvailableVehiclesPanel() {
     const available = vehicleMasterData.filter(v => {
         const plate = getFlexVal(v, 'PLATE NO') || '';
         return plate && !assignedPlates.includes(plate);
-    }).slice(0, 20);
+    }).slice(0, 25);
 
     if (!available.length) {
         container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px;">No available vehicles.</p>';
@@ -2845,13 +2870,57 @@ function renderAvailableVehiclesPanel() {
         const plate = getFlexVal(v, 'PLATE NO') || '—';
         const cat = getFlexVal(v, 'Category') || '—';
         const model = getFlexVal(v, 'Model') || getFlexVal(v, 'Make') || '—';
+        const live = getVehicleLiveStatus(plate);
+        
         return `
-        <div style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <div style="font-weight:700; color:var(--accent-green); font-size:13px;">${escHtml(plate)}</div>
-                <div style="font-size:11px; color:var(--text-muted);">${escHtml(model)} · ${escHtml(cat)}</div>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span style="font-weight:700; color:var(--text-primary); font-size:14px;">${escHtml(plate)}</span>
+                    <span style="padding:2px 8px; border-radius:12px; font-size:10px; font-weight:700; background:${live.bg}; color:${live.color}; border:1px solid ${live.color}33;">
+                        <i class="fas fa-${live.icon}" style="font-size:9px; margin-right:4px;"></i>${live.label}
+                    </span>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">${escHtml(model)} · ${escHtml(cat)}</div>
+                <div style="font-size:11px; color:var(--text-secondary);"><i class="fas fa-map-marker-alt" style="color:${live.color}; width:12px;"></i> ${escHtml(live.location)}</div>
             </div>
-            <span style="padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">Available</span>
+        </div>`;
+    }).join('');
+}
+
+function updateRequesterAvailability() {
+    const container = document.getElementById('requester-availability-list');
+    if (!container) return;
+    
+    const assignedPlates = getVehicleRequests()
+        .filter(r => r.status === 'Assigned' || r.status === 'In Progress')
+        .map(r => r.assignedVehicle).filter(Boolean);
+
+    const available = vehicleMasterData.filter(v => {
+        const plate = getFlexVal(v, 'PLATE NO') || '';
+        return plate && !assignedPlates.includes(plate);
+    }).slice(0, 15);
+
+    if (!available.length) {
+        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:20px;">No vehicles currently available for requests.</p>';
+        return;
+    }
+
+    container.innerHTML = available.map(v => {
+        const plate = getFlexVal(v, 'PLATE NO') || '—';
+        const cat = getFlexVal(v, 'Category') || '—';
+        const live = getVehicleLiveStatus(plate);
+        
+        return `
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-weight:700; font-size:15px; color:var(--accent-blue);">${escHtml(plate)}</div>
+                <span style="padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; background:${live.bg}; color:${live.color};">
+                    ${live.label}
+                </span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">${escHtml(cat)}</div>
+            <div style="font-size:11px; color:var(--text-secondary); line-height:1.4;"><i class="fas fa-map-marker-alt" style="margin-right:5px; color:${live.color};"></i>${escHtml(live.location)}</div>
         </div>`;
     }).join('');
 }

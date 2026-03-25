@@ -1224,10 +1224,10 @@
                                     <div class="form-group">
                                         <label>Vehicle Type Preference</label>
                                         <select id="req-vtype" class="status-select" style="margin-top:4px;">
-                                            <option value="Any">Any Available</option>
                                             <option value="Trailer Head">Trailer Head</option>
                                             <option value="Pick up">Pick Up</option>
                                             <option value="Car">Car</option>
+                                            <option value="Any">Any Available</option>
                                             <option value="Bus">Bus</option>
                                             <option value="Van">Van</option>
                                         </select>
@@ -1242,6 +1242,20 @@
                                     <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Request</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Fleet Status (New) -->
+                    <div class="data-table-wrapper" style="margin-bottom:24px;">
+                        <div class="table-header">
+                            <h3><i class="fas fa-satellite-dish" style="color:var(--accent-blue); margin-right:8px;"></i>Live Fleet Status & Availability</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="updateRequesterAvailability()"><i class="fas fa-sync"></i> Update Live Status</button>
+                            </div>
+                        </div>
+                        <div id="requester-availability-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:12px; padding:15px; max-height:400px; overflow-y:auto; background:rgba(0,0,0,0.1);">
+                            <!-- Populated via JS -->
+                            <p style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:20px;">Loading live fleet status...</p>
                         </div>
                     </div>
 
