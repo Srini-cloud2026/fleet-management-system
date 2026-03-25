@@ -1247,9 +1247,22 @@
                     
                     <!-- Live Fleet Status (New) -->
                     <div class="data-table-wrapper" style="margin-bottom:24px;">
-                        <div class="table-header">
-                            <h3><i class="fas fa-satellite-dish" style="color:var(--accent-blue); margin-right:8px;"></i>Live Fleet Status & Availability</h3>
-                            <div class="table-actions">
+                        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+                            <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                                <h3 style="margin:0;"><i class="fas fa-satellite-dish" style="color:var(--accent-blue); margin-right:8px;"></i>Live Fleet Status & Availability</h3>
+                                <div id="live-fleet-kpis" style="display:flex; gap:16px; margin-left:20px; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Available: <b id="kpi-live-available" style="color:#10b981;">0</b></span>
+                                    <span style="color:var(--text-muted);">In Use: <b id="kpi-live-inuse" style="color:#f59e0b;">0</b></span>
+                                    <span style="color:var(--text-muted);">Total: <b id="kpi-live-total" style="color:var(--accent-blue);">0</b></span>
+                                </div>
+                            </div>
+                            <div class="table-actions" style="display:flex; gap:10px; align-items:center;">
+                                <select id="requester-cat-filter" class="status-select" style="padding:6px 12px; font-size:13px; width:140px; border-color:rgba(255,255,255,0.1);" onchange="updateRequesterAvailability()">
+                                    <option value="All">All Categories</option>
+                                    <option value="Trailer Head">Trailer Head</option>
+                                    <option value="Trailer">Trailer</option>
+                                    <option value="Pick up">Pick Up</option>
+                                </select>
                                 <button class="btn btn-secondary" onclick="updateRequesterAvailability()"><i class="fas fa-sync"></i> Update Live Status</button>
                             </div>
                         </div>
@@ -1292,7 +1305,17 @@
                             <h2>Vehicle Assignment</h2>
                             <p class="subtitle">Review pending requests and assign available vehicles</p>
                         </div>
-                        <button class="btn btn-secondary" onclick="loadAssignmentBoard()"><i class="fas fa-sync"></i> Refresh Board</button>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <select id="assign-cat-filter" class="status-select" style="padding:8px 14px; font-size:14px; width:160px; border-color:var(--accent-blue); background:rgba(59,130,246,0.05);" onchange="loadAssignmentBoard()">
+                                <option value="All">All Categories</option>
+                                <option value="Trailer Head">Trailer Head</option>
+                                <option value="Trailer">Trailer</option>
+                                <option value="Pick up">Pick Up</option>
+                                <option value="Car">Car</option>
+                                <option value="Bus">Bus</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="loadAssignmentBoard()"><i class="fas fa-sync"></i> Refresh Board</button>
+                        </div>
                     </div>
 
                     <!-- Summary KPIs -->

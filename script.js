@@ -2853,17 +2853,29 @@ function getVehicleLiveStatus(plate) {
 function renderAvailableVehiclesPanel() {
     const container = document.getElementById('available-vehicles-list');
     if (!container) return;
+    
+    // Get category filter
+    const catFilter = document.getElementById('assign-cat-filter')?.value || 'All';
+    
     const assignedPlates = getVehicleRequests()
         .filter(r => r.status === 'Assigned' || r.status === 'In Progress')
         .map(r => r.assignedVehicle).filter(Boolean);
 
-    const available = vehicleMasterData.filter(v => {
+    let available = vehicleMasterData.filter(v => {
         const plate = getFlexVal(v, 'PLATE NO') || '';
-        return plate && !assignedPlates.includes(plate);
-    }).slice(0, 25);
+        const cat = getFlexVal(v, 'Category') || '';
+        const plateAvailable = plate && !assignedPlates.includes(plate);
+        
+        if (!plateAvailable) return false;
+        if (catFilter !== 'All' && !cat.toLowerCase().includes(catFilter.toLowerCase())) return false;
+        
+        return true;
+    });
+
+    available = available.slice(0, 30);
 
     if (!available.length) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px;">No available vehicles.</p>';
+        container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:30px;">No available ${catFilter === 'All' ? '' : catFilter.toLowerCase() + ' '}vehicles found.</p>`;
         return;
     }
     container.innerHTML = available.map(v => {
@@ -2892,21 +2904,52 @@ function updateRequesterAvailability() {
     const container = document.getElementById('requester-availability-list');
     if (!container) return;
     
+    // Get category filter
+    const catFilter = document.getElementById('requester-cat-filter')?.value || 'All';
+    
+    // Get all plates that are currently assigned/in-progress to EXCLUDE from available if they are in "Available" list
+    // BUT the user wants to see "Vehicle in use" as well in the "Live Fleet Status" section?
+    // "in the 3rd pic there is red manual highlter there i need the vechile availble, Vechile in use and details"
+    // This suggests the "Live Fleet Status" should show ALL vehicles in the category, not just unassigned ones.
+    
     const assignedPlates = getVehicleRequests()
         .filter(r => r.status === 'Assigned' || r.status === 'In Progress')
         .map(r => r.assignedVehicle).filter(Boolean);
 
-    const available = vehicleMasterData.filter(v => {
+    // Filter full fleet by category
+    const fleet = vehicleMasterData.filter(v => {
         const plate = getFlexVal(v, 'PLATE NO') || '';
-        return plate && !assignedPlates.includes(plate);
-    }).slice(0, 15);
+        const cat = getFlexVal(v, 'Category') || '';
+        if (catFilter !== 'All' && !cat.toLowerCase().includes(catFilter.toLowerCase())) return false;
+        return !!plate;
+    });
 
-    if (!available.length) {
-        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:20px;">No vehicles currently available for requests.</p>';
+    // Calculate KPIs
+    let countAvailable = 0;
+    let countInUse = 0;
+    
+    fleet.forEach(v => {
+        const plate = getFlexVal(v, 'PLATE NO');
+        const live = getVehicleLiveStatus(plate);
+        if (live.label === 'Available') countAvailable++;
+        else countInUse++;
+    });
+    
+    // Update KPI labels
+    const setLabel = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setLabel('kpi-live-available', countAvailable);
+    setLabel('kpi-live-inuse', countInUse);
+    setLabel('kpi-live-total', fleet.length);
+
+    // Render grid (sliced to avoid performance issues if fleet is huge)
+    const listToRender = fleet.slice(0, 30);
+
+    if (!listToRender.length) {
+        container.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:20px;">No vehicles found for category "${catFilter}".</p>`;
         return;
     }
 
-    container.innerHTML = available.map(v => {
+    container.innerHTML = listToRender.map(v => {
         const plate = getFlexVal(v, 'PLATE NO') || '—';
         const cat = getFlexVal(v, 'Category') || '—';
         const live = getVehicleLiveStatus(plate);
@@ -2914,13 +2957,16 @@ function updateRequesterAvailability() {
         return `
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; position:relative;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <div style="font-weight:700; font-size:15px; color:var(--accent-blue);">${escHtml(plate)}</div>
-                <span style="padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; background:${live.bg}; color:${live.color};">
+                <div style="font-weight:700; font-size:15px; color:${live.label === 'Available' ? 'var(--accent-blue)' : live.color};">${escHtml(plate)}</div>
+                <span style="padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; background:${live.bg}; color:${live.color}; border:1px solid ${live.color}22;">
                     ${live.label}
                 </span>
             </div>
             <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">${escHtml(cat)}</div>
-            <div style="font-size:11px; color:var(--text-secondary); line-height:1.4;"><i class="fas fa-map-marker-alt" style="margin-right:5px; color:${live.color};"></i>${escHtml(live.location)}</div>
+            <div style="font-size:11px; color:var(--text-secondary); line-height:1.4; display:flex; align-items:flex-start; gap:6px;">
+                <i class="fas fa-map-marker-alt" style="margin-top:2px; color:${live.color}; flex-shrink:0;"></i>
+                <span>${escHtml(live.location)}</span>
+            </div>
         </div>`;
     }).join('');
 }
