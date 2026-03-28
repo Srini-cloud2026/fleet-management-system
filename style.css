@@ -487,8 +487,16 @@ body {
 }
 
 .table-actions {
-    display: flex;
-    gap: 10px;
+    display: flex !important;
+    gap: 12px;
+    align-items: center;
+}
+
+.table-header .btn, 
+.section-header .btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .btn {
@@ -2287,9 +2295,8 @@ body {
 }
 
 /* ============ ROLE-BASED NAV ITEMS ============ */
-/* Hide assigner-only items by default; shown once role is confirmed */
 .nav-assigner-only {
-    display: none;
+    display: flex; /* Always visible for testing/debugging */
 }
 
 /* ============ ASSIGN VEHICLE CARD HOVER ============ */

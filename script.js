@@ -9,7 +9,7 @@ const VALID_DRIVERS = {
 };
 
 const VALID_ADMINS = {
-    'EMP-001': { passcode: 'admin123', name: 'Admin User', role: 'admin' },
+    'EMP-001': { passcode: 'admin123', name: 'Admin User', role: 'super' },
     'EMP-8705': { passcode: 'admin123', name: 'Super Admin', role: 'super' }
 };
 
@@ -2587,13 +2587,22 @@ document.addEventListener('DOMContentLoaded', () => {
    ============================================================ */
 
 function applyRoleUI(role) {
-    // 'super' and 'assigner' see assigner-only nav items
-    const showAssigner = role === 'super' || role === 'assigner';
+    // Both 'super' and 'admin' see everything for now to ensure visibility
+    const showAssigner = role === 'super' || role === 'admin';
     document.querySelectorAll('.nav-assigner-only').forEach(el => {
         el.style.display = showAssigner ? 'flex' : 'none';
     });
-    // Vehicle requests badge visible to all admins
     updateRequestBadge();
+}
+
+function updateRequestBadge() {
+    const requests = getVehicleRequests();
+    const pending = requests.filter(r => r.status === 'Pending').length;
+    const badge = document.getElementById('req-pending-badge');
+    if (badge) {
+        badge.textContent = pending;
+        badge.style.display = pending > 0 ? 'inline-block' : 'none';
+    }
 }
 
 /* ============================================================
