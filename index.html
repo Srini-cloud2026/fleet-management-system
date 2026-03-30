@@ -1233,6 +1233,10 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
+                                        <label>Vehicle Quantity</label>
+                                        <input type="number" id="req-qty" class="status-select" value="1" min="1" max="10" style="margin-top:4px;">
+                                    </div>
+                                    <div class="form-group">
                                         <label>Purpose / Notes</label>
                                         <input type="text" id="req-notes" class="status-select" placeholder="Reason for trip" style="margin-top:4px;">
                                     </div>
@@ -1525,11 +1529,10 @@
                 <div id="assign-modal-request-info" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:10px; padding:16px; margin-bottom:20px;"></div>
                 <h4 style="margin-bottom:12px; color:var(--text-primary);"><i class="fas fa-truck" style="color:var(--accent-green); margin-right:6px;"></i>Select Available Vehicle</h4>
                 <div id="assign-modal-vehicles" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-height:300px; overflow-y:auto;"></div>
-                <div style="margin-top:20px;">
-                    <label style="display:block; margin-bottom:6px; font-size:13px; color:var(--text-muted);">Driver Name (Optional)</label>
-                    <input type="text" id="assign-driver-name" class="status-select" placeholder="e.g. Mohammed Ali" style="width:100%;">
+                <div id="dynamic-assignment-details" style="margin-top:20px; display:flex; flex-direction:column; gap:16px;">
+                    <!-- Dynamically populated rows for each selected vehicle -->
                 </div>
-                <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end;">
+                <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
                     <button class="btn btn-secondary" onclick="closeAssignModal()">Cancel</button>
                     <button class="btn btn-primary" id="confirm-assign-btn" onclick="confirmAssignment()" disabled><i class="fas fa-check"></i> Confirm Assignment</button>
                 </div>

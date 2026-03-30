@@ -501,7 +501,45 @@ function initDriverHub() {
     document.getElementById('current-truck-id').textContent = `Truck: ${currentUser.id} | Emp ID: ${currentUser.empId}`;
 
     showSection('driver');
+    
+    // Auto-start GPS tracking (Requirement: GPS start capturing on login)
+    startContinuousGpsTracking();
 }
+
+function startContinuousGpsTracking() {
+    const indicator = document.getElementById('gps-indicator');
+    const coords = document.getElementById('gps-coords');
+    if (indicator) indicator.textContent = 'Acquiring GPS...';
+    
+    if ("geolocation" in navigator) {
+        // High accuracy requested by user for precise location verification
+        navigator.geolocation.watchPosition(pos => {
+            if (indicator) {
+                indicator.textContent = 'GPS Active';
+                indicator.style.color = 'var(--accent-green)';
+            }
+            if (coords) {
+                coords.textContent = `Lat: ${pos.coords.latitude.toFixed(5)} | Lng: ${pos.coords.longitude.toFixed(5)}`;
+            }
+            // Update the live gpsData object for consistency
+            gpsData[currentUser.id] = {
+                registration: currentUser.id,
+                location: { latitude: pos.coords.latitude, longitude: pos.coords.longitude },
+                speed: pos.coords.speed || 0,
+                ignition: true,
+                odometer: (gpsData[currentUser.id]?.odometer || 0)
+            };
+        }, err => {
+            console.warn("GPS tracking error:", err);
+            if (indicator) indicator.textContent = 'GPS Error / Sim Mode';
+            updateSimulatedGPS();
+        }, { enableHighAccuracy: true, maximumAge: 0 });
+    } else {
+        if (indicator) indicator.textContent = 'GPS Not Supported';
+        updateSimulatedGPS();
+    }
+}
+
 
 function initAdminDashboard() {
     document.body.classList.remove('mobile-view');
@@ -2595,8 +2633,8 @@ function applyRoleUI(role) {
     updateRequestBadge();
 }
 
-function updateRequestBadge() {
-    const requests = getVehicleRequests();
+async function updateRequestBadge() {
+    const requests = await getVehicleRequests();
     const pending = requests.filter(r => r.status === 'Pending').length;
     const badge = document.getElementById('req-pending-badge');
     if (badge) {
@@ -2605,26 +2643,71 @@ function updateRequestBadge() {
     }
 }
 
+
 /* ============================================================
    VEHICLE REQUESTS — localStorage-backed
    ============================================================ */
 
 const REQUESTS_KEY = 'fleetVehicleRequests';
 
-function getVehicleRequests() {
+async function getVehicleRequests() {
+    try {
+        const resp = await fetch(
+            `${SUPABASE_URL}/rest/v1/vechile_requests?select=*&order=created_at.desc`,
+            {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        if (resp.ok) return await resp.json();
+        console.error("Failed to fetch requests from Supabase:", await resp.text());
+    } catch (e) {
+        console.error("Fetch error for requests:", e);
+    }
+    // Fallback to local if sync fails
     return JSON.parse(localStorage.getItem(REQUESTS_KEY) || '[]');
 }
 
-function saveVehicleRequests(requests) {
-    localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
+async function saveVehicleRequest(request) {
+    // Save to Supabase (Upsert based on ID)
+    try {
+        const resp = await fetch(
+            `${SUPABASE_URL}/rest/v1/vechile_requests`,
+            {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify(request)
+            }
+        );
+        if (!resp.ok) console.error("Failed to save request to Supabase:", await resp.text());
+    } catch (e) {
+        console.error("Save error for request:", e);
+    }
+    
+    // Backup in local
+    const local = JSON.parse(localStorage.getItem(REQUESTS_KEY) || '[]');
+    const idx = local.findIndex(r => r.id === request.id);
+    if (idx > -1) local[idx] = request;
+    else local.unshift(request);
+    localStorage.setItem(REQUESTS_KEY, JSON.stringify(local));
 }
 
-function generateRequestId() {
-    const existing = getVehicleRequests();
+
+async function generateRequestId() {
+    const existing = await getVehicleRequests();
     const nums = existing.map(r => parseInt((r.id || 'REQ-0').split('-')[1]) || 0);
     const next = nums.length ? Math.max(...nums) + 1 : 1000;
     return 'REQ-' + next;
 }
+
 
 function openNewRequestForm() {
     const container = document.getElementById('new-request-form-container');
@@ -2655,6 +2738,7 @@ function submitVehicleRequest(event) {
     const date = document.getElementById('req-date').value;
     const time = document.getElementById('req-time').value;
     const vtype = document.getElementById('req-vtype').value;
+    const qty = parseInt(document.getElementById('req-qty').value) || 1;
     const notes = document.getElementById('req-notes').value.trim();
 
     const request = {
@@ -2663,13 +2747,11 @@ function submitVehicleRequest(event) {
         requesterEmpId: empId,
         from, to, date, time,
         vehicleType: vtype,
+        quantity: qty,
         notes,
         status: 'Pending',
-        assignedVehicle: null,
-        assignedDriver: null,
-        assignedAt: null,
+        assignments: [], // Array of { vehicle, driver, phone, arrival }
         createdAt: new Date().toISOString(),
-        tripStartTime: null,
         estimatedDurationMin: estimateDistanceDuration(from, to)
     };
 
@@ -2682,8 +2764,44 @@ function submitVehicleRequest(event) {
     updateRequestBadge();
 
     // Show success toast
-    showToast('✅ Request ' + request.id + ' submitted successfully!', 'success');
+    showToast('✅ Request ' + request.id + ' submitted to Supabase!', 'success');
 }
+
+async function deleteVehicleRequest(requestId) {
+    if (!confirm('Are you sure you want to delete request ' + requestId + '? This cannot be undone.')) return;
+    
+    // 1. Remove from Supabase
+    try {
+        await fetch(
+            `${SUPABASE_URL}/rest/v1/vechile_requests?id=eq.${requestId}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                }
+            }
+        );
+    } catch (e) {
+        console.error("Supabase delete failed:", e);
+    }
+
+    // 2. Remove from Local Storage
+    const requests = await getVehicleRequests();
+    const updated = requests.filter(r => r.id !== requestId && r.originalRequestId !== requestId);
+    localStorage.setItem(REQUESTS_KEY, JSON.stringify(updated));
+
+    showToast('🗑️ Request ' + requestId + ' deleted.', 'info');
+    
+    // Refresh UIs
+    if (currentRole === 'admin') {
+        loadAssignmentBoard();
+        loadTripMonitor();
+    } else {
+        loadMyVehicleRequests();
+    }
+}
+
 
 function estimateDistanceDuration(from, to) {
     // Rough estimate: 60 min default. With GPS route keys we could do better.
@@ -2704,29 +2822,33 @@ function estimateDistanceDuration(from, to) {
     return 60; // default 60 minutes
 }
 
-function loadMyVehicleRequests() {
+async function loadMyVehicleRequests() {
     const tbody = document.getElementById('my-requests-tbody');
     if (!tbody) return;
-    const requests = getVehicleRequests();
+    const requests = await getVehicleRequests();
     // Filter by current user emp ID
     const myId = currentUser?.id || '';
-    const mine = myId ? requests.filter(r => r.requesterEmpId === myId || currentUser?.role === 'super') : requests;
+    const mine = myId ? requests.filter(r => r.requester_emp_id === myId || currentUser?.role === 'super') : requests;
 
     if (!mine.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">No requests submitted yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">No requests found in Supabase.</td></tr>';
         return;
     }
-    tbody.innerHTML = mine.map(r => `
-        <tr>
-            <td style="color:var(--accent-blue); font-weight:600;">${r.id}</td>
-            <td>${escHtml(r.from)} → ${escHtml(r.to)}</td>
-            <td>${r.date} ${r.time}</td>
-            <td>${escHtml(r.vehicleType)}</td>
-            <td>${r.assignedVehicle ? `<strong style="color:var(--accent-green);">${escHtml(r.assignedVehicle)}</strong>` : '<span style="color:var(--text-muted);">—</span>'}</td>
-            <td>${requestStatusBadge(r.status)}</td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = mine.map(r => {
+        const vehicles = r.assignments?.map(a => a.vehicle).join(', ') || '—';
+        return `
+            <tr>
+                <td style="color:var(--accent-blue); font-weight:600;">${r.id}</td>
+                <td>${escHtml(r.from_location)} → ${escHtml(r.to_location)}</td>
+                <td>${r.trip_date} ${r.trip_time}</td>
+                <td>${escHtml(r.vehicle_type)} (Qty: ${r.quantity || 1})</td>
+                <td><strong style="color:var(--accent-green);">${escHtml(vehicles)}</strong></td>
+                <td>${requestStatusBadge(r.status)}</td>
+            </tr>
+        `;
+    }).join('');
 }
+
 
 function requestStatusBadge(status) {
     const map = {
@@ -2740,10 +2862,11 @@ function requestStatusBadge(status) {
     return `<span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; ${style}">${status}</span>`;
 }
 
-function updateRequestBadge() {
+async function updateRequestBadge() {
     const badge = document.getElementById('req-pending-badge');
     if (!badge) return;
-    const count = getVehicleRequests().filter(r => r.status === 'Pending').length;
+    const requests = await getVehicleRequests();
+    const count = requests.filter(r => r.status === 'Pending').length;
     if (count > 0) {
         badge.textContent = count;
         badge.style.display = 'inline-block';
@@ -2751,6 +2874,7 @@ function updateRequestBadge() {
         badge.style.display = 'none';
     }
 }
+
 
 function useGpsForRequest() {
     if (!navigator.geolocation) { alert('GPS not supported on this device.'); return; }
@@ -2777,31 +2901,30 @@ function useGpsForRequest() {
    ============================================================ */
 
 let currentAssignRequestId = null;
-let selectedAssignVehicle = null;
+let selectedAssignVehicles = []; // Stores plates [plate1, plate2...]
 let assignHistoryFilter = 'all';
 
-function loadAssignmentBoard() {
-    renderPendingRequests();
-    renderAvailableVehiclesPanel();
-    renderAssignHistory();
-    updateAssignKPIs();
+async function loadAssignmentBoard() {
+    await renderPendingRequests();
+    await renderAvailableVehiclesPanel();
+    await renderAssignHistory();
+    await updateAssignKPIs();
 }
 
-function updateAssignKPIs() {
-    const requests = getVehicleRequests();
-    const pending = requests.filter(r => r.status === 'Pending').length;
-    const active = requests.filter(r => r.status === 'In Progress').length;
-    const completed = requests.filter(r => {
-        if (r.status !== 'Completed') return false;
-        if (!r.assignedAt) return false;
-        return new Date(r.assignedAt).toDateString() === new Date().toDateString();
-    }).length;
 
-    // Available vehicles = vehicles not currently assigned
-    const assignedPlates = requests
-        .filter(r => r.status === 'Assigned' || r.status === 'In Progress')
-        .map(r => r.assignedVehicle)
-        .filter(Boolean);
+async function updateAssignKPIs() {
+    const requests = await getVehicleRequests();
+    const pending = requests.filter(r => r.status === 'Pending').length;
+    const active = requests.filter(r => r.status === 'In Progress' || r.status === 'Assigned').length;
+    
+    // Calculate available
+    const assignedPlates = [];
+    requests.forEach(r => {
+        if (r.status === 'Assigned' || r.status === 'In Progress') {
+            if (r.assignments) r.assignments.forEach(a => assignedPlates.push(a.vehicle));
+        }
+    });
+
     const availableCount = vehicleMasterData.filter(v => {
         const plate = getFlexVal(v, 'PLATE NO') || '';
         return !assignedPlates.includes(plate);
@@ -2811,14 +2934,17 @@ function updateAssignKPIs() {
     setKpi('assign-kpi-pending', pending);
     setKpi('assign-kpi-available', availableCount);
     setKpi('assign-kpi-active', active);
-    setKpi('assign-kpi-completed', completed);
-    updateRequestBadge();
+    setKpi('assign-kpi-completed', requests.filter(r => r.status === 'Completed').length);
+    await updateRequestBadge();
 }
 
-function renderPendingRequests() {
+
+
+async function renderPendingRequests() {
     const container = document.getElementById('pending-requests-list');
     if (!container) return;
-    const pending = getVehicleRequests().filter(r => r.status === 'Pending');
+    const requests = await getVehicleRequests();
+    const pending = requests.filter(r => r.status === 'Pending');
     if (!pending.length) {
         container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px;">No pending requests.</p>';
         return;
@@ -2828,12 +2954,12 @@ function renderPendingRequests() {
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
                 <div>
                     <div style="font-weight:700; color:var(--accent-orange);">${r.id}</div>
-                    <div style="font-size:12px; color:var(--text-muted);">${escHtml(r.requesterName)} · ${r.requesterEmpId}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">${escHtml(r.requester_name || r.requesterName)} · ${r.requester_emp_id || r.requesterEmpId}</div>
                 </div>
                 ${requestStatusBadge(r.status)}
             </div>
-            <div style="font-size:13px; margin-bottom:4px;"><i class="fas fa-route" style="color:var(--accent-blue); width:14px;"></i> ${escHtml(r.from)} → ${escHtml(r.to)}</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;"><i class="fas fa-calendar" style="width:14px;"></i> ${r.date} at ${r.time} · ${escHtml(r.vehicleType)}</div>
+            <div style="font-size:13px; margin-bottom:4px;"><i class="fas fa-route" style="color:var(--accent-blue); width:14px;"></i> ${escHtml(r.from_location || r.from)} → ${escHtml(r.to_location || r.to)}</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;"><i class="fas fa-calendar" style="width:14px;"></i> ${r.trip_date || r.date} at ${r.trip_time || r.time} · ${escHtml(r.vehicle_type || r.vehicleType)} (Qty: ${r.quantity || 1})</div>
             ${r.notes ? `<div style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:8px;">"${escHtml(r.notes)}"</div>` : ''}
             <button class="btn btn-primary" style="width:100%; padding:8px; font-size:13px;" onclick="openAssignModal('${r.id}')">
                 <i class="fas fa-truck"></i> Assign Vehicle
@@ -2841,6 +2967,7 @@ function renderPendingRequests() {
         </div>
     `).join('');
 }
+
 
 function getVehicleLiveStatus(plate) {
     const data = gpsData[plate];
@@ -2859,18 +2986,23 @@ function getVehicleLiveStatus(plate) {
     }
 }
 
-function renderAvailableVehiclesPanel() {
+async function renderAvailableVehiclesPanel() {
     const container = document.getElementById('available-vehicles-list');
     if (!container) return;
     
     // Get category filter
     const catFilter = document.getElementById('assign-cat-filter')?.value || 'All';
     
-    const assignedPlates = getVehicleRequests()
-        .filter(r => r.status === 'Assigned' || r.status === 'In Progress')
-        .map(r => r.assignedVehicle).filter(Boolean);
+    const requests = await getVehicleRequests();
+    const assignedPlates = [];
+    requests.forEach(r => {
+        if (r.status === 'Assigned' || r.status === 'In Progress') {
+            if (r.assignments) r.assignments.forEach(a => assignedPlates.push(a.vehicle));
+        }
+    });
 
     let available = vehicleMasterData.filter(v => {
+
         const plate = getFlexVal(v, 'PLATE NO') || '';
         const cat = getFlexVal(v, 'Category') || '';
         const plateAvailable = plate && !assignedPlates.includes(plate);
@@ -2909,21 +3041,20 @@ function renderAvailableVehiclesPanel() {
     }).join('');
 }
 
-function updateRequesterAvailability() {
+async function updateRequesterAvailability() {
     const container = document.getElementById('requester-availability-list');
     if (!container) return;
     
     // Get category filter
     const catFilter = document.getElementById('requester-cat-filter')?.value || 'All';
     
-    // Get all plates that are currently assigned/in-progress to EXCLUDE from available if they are in "Available" list
-    // BUT the user wants to see "Vehicle in use" as well in the "Live Fleet Status" section?
-    // "in the 3rd pic there is red manual highlter there i need the vechile availble, Vechile in use and details"
-    // This suggests the "Live Fleet Status" should show ALL vehicles in the category, not just unassigned ones.
-    
-    const assignedPlates = getVehicleRequests()
-        .filter(r => r.status === 'Assigned' || r.status === 'In Progress')
-        .map(r => r.assignedVehicle).filter(Boolean);
+    const requests = await getVehicleRequests();
+    const assignedPlates = [];
+    requests.forEach(r => {
+        if (r.status === 'Assigned' || r.status === 'In Progress') {
+            if (r.assignments) r.assignments.forEach(a => assignedPlates.push(a.vehicle));
+        }
+    });
 
     // Filter full fleet by category
     const fleet = vehicleMasterData.filter(v => {
@@ -2980,17 +3111,18 @@ function updateRequesterAvailability() {
     }).join('');
 }
 
-function filterAssignHistory(btn, filter) {
+async function filterAssignHistory(btn, filter) {
     assignHistoryFilter = filter;
     document.querySelectorAll('#section-vehicle-assignment .tab.mini').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    renderAssignHistory();
+    await renderAssignHistory();
 }
 
-function renderAssignHistory() {
+async function renderAssignHistory() {
     const tbody = document.getElementById('assign-history-tbody');
     if (!tbody) return;
-    let requests = getVehicleRequests();
+    let requests = await getVehicleRequests();
+
     if (assignHistoryFilter !== 'all') {
         requests = requests.filter(r => r.status === assignHistoryFilter);
     }
@@ -3001,27 +3133,31 @@ function renderAssignHistory() {
     tbody.innerHTML = requests.map(r => `
         <tr>
             <td style="color:var(--accent-blue); font-weight:600;">${r.id}</td>
-            <td>${escHtml(r.requesterName)}<br><small style="color:var(--text-muted);">${r.requesterEmpId}</small></td>
-            <td>${escHtml(r.from)} → ${escHtml(r.to)}</td>
-            <td>${r.date} ${r.time}</td>
-            <td>${r.assignedVehicle ? `<strong style="color:var(--accent-green);">${escHtml(r.assignedVehicle)}</strong>${r.assignedDriver ? '<br><small>' + escHtml(r.assignedDriver) + '</small>' : ''}` : '—'}</td>
+            <td>${escHtml(r.requester_name || r.requesterName)}<br><small style="color:var(--text-muted);">${r.requester_emp_id || r.requesterEmpId}</small></td>
+            <td>${escHtml(r.from_location || r.from)} → ${escHtml(r.to_location || r.to)}</td>
+            <td>${r.trip_date || r.date} ${r.trip_time || r.time}</td>
+            <td>${(r.assignments && r.assignments.length > 0) ? `<strong style="color:var(--accent-green);">${r.assignments.map(a => a.vehicle).join(', ')}</strong>` : (r.assignedVehicle ? `<strong style="color:var(--accent-green);">${escHtml(r.assignedVehicle)}</strong>` : '—')}</td>
             <td>${requestStatusBadge(r.status)}</td>
             <td>
                 ${r.status === 'Pending' ? `<button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="openAssignModal('${r.id}')"><i class="fas fa-truck"></i> Assign</button>` : ''}
                 ${r.status === 'Assigned' ? `<button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="markTripStarted('${r.id}')"><i class="fas fa-play"></i> Start</button>` : ''}
                 ${r.status === 'In Progress' ? `<button class="btn" style="padding:4px 10px;font-size:11px;background:var(--accent-green);color:#fff;" onclick="markTripCompleted('${r.id}')"><i class="fas fa-flag-checkered"></i> Complete</button>` : ''}
-                ${r.status === 'Completed' ? '<span style="color:var(--text-muted);font-size:11px;">Done</span>' : ''}
+                <button class="btn" style="padding:4px 10px;font-size:11px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);margin-left:4px;" onclick="deleteVehicleRequest('${r.id}')" title="Delete Request"><i class="fas fa-trash-alt"></i></button>
             </td>
+
+
         </tr>
     `).join('');
 }
 
-function openAssignModal(requestId) {
+async function openAssignModal(requestId) {
     currentAssignRequestId = requestId;
-    selectedAssignVehicle = null;
-    const requests = getVehicleRequests();
+    selectedAssignVehicles = []; // Support multi-select
+    renderAssignmentInputs(); // Clear dynamic inputs
+    const requests = await getVehicleRequests();
     const req = requests.find(r => r.id === requestId);
     if (!req) return;
+
 
     // Populate request info
     document.getElementById('assign-modal-request-info').innerHTML = `
@@ -3036,9 +3172,13 @@ function openAssignModal(requestId) {
     `;
 
     // Populate available vehicles
-    const assignedPlates = requests
-        .filter(r => (r.status === 'Assigned' || r.status === 'In Progress') && r.id !== requestId)
-        .map(r => r.assignedVehicle).filter(Boolean);
+    const assignedPlates = [];
+    requests.forEach(reqObj => {
+        if (reqObj.status === 'Assigned' || reqObj.status === 'In Progress') {
+            if (reqObj.assignments) reqObj.assignments.forEach(a => assignedPlates.push(a.vehicle));
+        }
+    });
+
 
     let candidates = vehicleMasterData.filter(v => {
         const plate = getFlexVal(v, 'PLATE NO') || '';
@@ -3068,40 +3208,152 @@ function openAssignModal(requestId) {
         }).join('');
     }
 
-    document.getElementById('assign-driver-name').value = '';
+    document.getElementById('confirm-assign-btn').innerHTML = '<i class="fas fa-check"></i> Confirm Assignment (0)';
     document.getElementById('confirm-assign-btn').disabled = true;
+
     document.getElementById('assign-modal').classList.add('active');
 }
 
 function selectAssignVehicle(plate, cardEl) {
-    selectedAssignVehicle = plate;
-    document.querySelectorAll('.assign-vehicle-card').forEach(c => {
-        c.style.borderColor = 'rgba(255,255,255,0.08)';
-        c.style.background = 'rgba(255,255,255,0.03)';
-    });
-    cardEl.style.borderColor = 'var(--accent-blue)';
-    cardEl.style.background = 'rgba(59,130,246,0.1)';
-    document.getElementById('confirm-assign-btn').disabled = false;
+    if (!selectedAssignVehicles) selectedAssignVehicles = [];
+    
+    const idx = selectedAssignVehicles.indexOf(plate);
+    if (idx > -1) {
+        selectedAssignVehicles.splice(idx, 1);
+        cardEl.style.borderColor = 'rgba(255,255,255,0.08)';
+        cardEl.style.background = 'rgba(255,255,255,0.03)';
+    } else {
+        selectedAssignVehicles.push(plate);
+        cardEl.style.borderColor = 'var(--accent-blue)';
+        cardEl.style.background = 'rgba(59,130,246,0.1)';
+    }
+    
+    renderAssignmentInputs();
+    const btn = document.getElementById('confirm-assign-btn');
+    if (btn) {
+        btn.disabled = selectedAssignVehicles.length === 0;
+        btn.innerHTML = `<i class="fas fa-check"></i> Confirm Assignment (${selectedAssignVehicles.length})`;
+    }
 }
 
-function confirmAssignment() {
-    if (!currentAssignRequestId || !selectedAssignVehicle) return;
-    const driverName = document.getElementById('assign-driver-name').value.trim();
-    const requests = getVehicleRequests();
+
+function renderAssignmentInputs() {
+    const container = document.getElementById('dynamic-assignment-details');
+    if (!container) return;
+
+    if (selectedAssignVehicles.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:12px; padding:20px; border:1px dashed rgba(255,255,255,0.1); border-radius:10px;">Select one or more vehicles above to enter driver details.</p>';
+        return;
+    }
+
+
+    container.innerHTML = `
+        <div style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; margin-bottom:10px; font-weight:700; color:var(--text-primary); font-size:13px;">
+            Driver Details for ${selectedAssignVehicles.length} Vehicle(s)
+        </div>
+    ` + selectedAssignVehicles.map(plate => `
+        <div class="assignment-row" data-plate="${plate}" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:15px;">
+            <div style="font-weight:700; color:var(--accent-green); font-size:14px; margin-bottom:10px;">
+                <i class="fas fa-truck"></i> Vehicle: ${plate}
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label style="display:block; margin-bottom:4px; font-size:11px; color:var(--text-muted);">Driver Name</label>
+                    <input type="text" class="status-select assign-name" placeholder="Name" style="width:100%; border-color:rgba(255,255,255,0.1);">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:4px; font-size:11px; color:var(--text-muted);">Driver Mobile</label>
+                    <input type="tel" class="status-select assign-phone" placeholder="971..." style="width:100%; border-color:rgba(255,255,255,0.1);">
+                </div>
+            </div>
+            <div>
+                <label style="display:block; margin-bottom:4px; font-size:11px; color:var(--text-muted);">Arrival timing</label>
+                <input type="datetime-local" class="status-select assign-time" style="width:100%; border-color:rgba(255,255,255,0.1);">
+            </div>
+        </div>
+    `).join('');
+}
+
+async function confirmAssignment() {
+    if (!currentAssignRequestId || !selectedAssignVehicles || selectedAssignVehicles.length === 0) return;
+    
+    const requests = await getVehicleRequests();
     const idx = requests.findIndex(r => r.id === currentAssignRequestId);
     if (idx === -1) return;
 
+
+    const newAssignments = [];
+    const rows = document.querySelectorAll('.assignment-row');
+    rows.forEach(row => {
+        const plate = row.getAttribute('data-plate');
+        const name = row.querySelector('.assign-name').value.trim();
+        const phone = row.querySelector('.assign-phone').value.trim();
+        const time = row.querySelector('.assign-time').value;
+
+        newAssignments.push({
+            vehicle: plate,
+            driver: name || 'Unknown',
+            phone: phone || null,
+            arrival: time || null,
+            status: 'Assigned',
+            assignedAt: new Date().toISOString()
+        });
+    });
+
     requests[idx].status = 'Assigned';
-    requests[idx].assignedVehicle = selectedAssignVehicle;
-    requests[idx].assignedDriver = driverName || null;
+    requests[idx].assignments = newAssignments;
     requests[idx].assignedAt = new Date().toISOString();
 
     saveVehicleRequests(requests);
-    showToast(`✅ ${selectedAssignVehicle} assigned to ${currentAssignRequestId}`, 'success');
+    
+    // Trigger Notifications for ALL drivers
+    newAssignments.forEach(asm => {
+        if (asm.phone) {
+            sendDriverNotification({
+                id: requests[idx].id,
+                from: requests[idx].from,
+                to: requests[idx].to,
+                assignedVehicle: asm.vehicle,
+                assignedDriver: asm.driver,
+                driverPhone: asm.phone,
+                arrivalTiming: asm.arrival
+            });
+        }
+    });
+
+    showToast(`✅ ${newAssignments.length} vehicles assigned to ${currentAssignRequestId}`, 'success');
     closeAssignModal();
     loadAssignmentBoard();
     loadTripMonitor();
 }
+
+/**
+ * Generates a WhatsApp Click-to-Chat link and prompts the dispatcher to notify the driver.
+ */
+function sendDriverNotification(request) {
+    if (!request.driverPhone) return;
+
+    const cleanPhone = request.driverPhone.replace(/[^0-9]/g, '');
+    const timeStr = request.arrivalTiming ? new Date(request.arrivalTiming).toLocaleString('en-GB', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'short'}) : 'ASAP';
+    
+    const message = `*NSGT FLEET - NEW TRIP*\n\n` +
+                    `*Trip ID:* ${request.id}\n` +
+                    `*Vehicle:* ${request.assignedVehicle}\n` +
+                    `*From:* ${request.from}\n` +
+                    `*To:* ${request.to}\n` +
+                    `*Expected Arrival:* ${timeStr}\n\n` +
+                    `Please login to the Driver App to start the trip.`;
+
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    
+    // In a real browser, we show a confirm for each to avoid being blocked as a popup
+    setTimeout(() => {
+        if (confirm(`Send WhatsApp notification to ${request.assignedDriver} (${request.assignedVehicle})?`)) {
+            window.open(waUrl, '_blank');
+        }
+    }, 100);
+}
+
 
 function closeAssignModal() {
     document.getElementById('assign-modal')?.classList.remove('active');
@@ -3140,24 +3392,52 @@ function markTripCompleted(requestId) {
 let monitorIntervalId = null;
 const monitorCharts = {}; // cache Chart.js instances
 
-function loadTripMonitor() {
-    const requests = getVehicleRequests();
-    const active = requests.filter(r => ['Assigned', 'In Progress', 'Completed'].includes(r.status));
-    const grid = document.getElementById('trip-monitor-grid');
-    if (!grid) return;
+async function loadTripMonitor() {
+    const requests = await getVehicleRequests();
+    const activeTrips = [];
+    requests.forEach(r => {
+        if (['Assigned', 'In Progress', 'Completed'].includes(r.status)) {
+
+            if (r.assignments && r.assignments.length > 0) {
+                r.assignments.forEach(a => {
+                    activeTrips.push({
+                        ...r,
+                        id: r.id + '-' + a.vehicle,
+                        originalRequestId: r.id,
+                        assignedVehicle: a.vehicle,
+                        assignedDriver: a.driver,
+                        driverPhone: a.phone,
+                        arrivalTiming: a.arrival
+                    });
+                });
+            } else if (r.assignedVehicle) {
+                // Compatibility with old single records
+                activeTrips.push(r);
+            }
+        }
+    });
 
     // Update summary strip
     const setMon = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    const assignedPlates = requests.filter(r => r.status === 'Assigned' || r.status === 'In Progress').map(r => r.assignedVehicle).filter(Boolean);
+    
+    const allAssignedPlates = [];
+    requests.forEach(r => {
+        if (r.status === 'Assigned' || r.status === 'In Progress') {
+            if (r.assignments) r.assignments.forEach(a => allAssignedPlates.push(a.vehicle));
+            else if (r.assignedVehicle) allAssignedPlates.push(r.assignedVehicle);
+        }
+    });
+
     setMon('mon-available', vehicleMasterData.filter(v => {
         const p = getFlexVal(v, 'PLATE NO') || '';
-        return p && !assignedPlates.includes(p);
+        return p && !allAssignedPlates.includes(p);
     }).length);
-    setMon('mon-inprogress', requests.filter(r => r.status === 'In Progress').length);
-    setMon('mon-completed', requests.filter(r => r.status === 'Completed').length);
-    setMon('mon-assigned', requests.filter(r => r.status === 'Assigned').length);
 
-    if (!active.length) {
+    setMon('mon-inprogress', activeTrips.filter(t => t.status === 'In Progress').length);
+    setMon('mon-completed', activeTrips.filter(t => t.status === 'Completed').length);
+    setMon('mon-assigned', activeTrips.filter(t => t.status === 'Assigned').length);
+
+    if (!activeTrips.length) {
         // Destroy old charts
         Object.values(monitorCharts).forEach(c => c?.destroy?.());
         grid.innerHTML = `
@@ -3168,10 +3448,10 @@ function loadTripMonitor() {
         return;
     }
 
-    grid.innerHTML = active.map(r => buildMonitorCard(r)).join('');
+    grid.innerHTML = activeTrips.map(r => buildMonitorCard(r)).join('');
 
     // Draw charts
-    active.forEach(r => {
+    activeTrips.forEach(r => {
         const prog = calculateTripProgress(r);
         const canvasId = 'doughnut-' + r.id;
         const canvas = document.getElementById(canvasId);
@@ -3245,8 +3525,12 @@ function buildMonitorCard(req) {
                 <div style="font-weight:700; font-size:18px; color:var(--text-primary);">${escHtml(vehicle)}</div>
                 <div style="font-size:12px; color:var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i>${escHtml(driver)}</div>
             </div>
-            ${requestStatusBadge(req.status)}
+            <div style="display:flex; align-items:center; gap:8px;">
+                ${requestStatusBadge(req.status)}
+                <button onclick="deleteVehicleRequest('${req.originalRequestId || req.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; opacity:0.6; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"><i class="fas fa-trash-alt"></i></button>
+            </div>
         </div>
+
         <!-- Route -->
         <div style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
             <i class="fas fa-map-marker-alt" style="color:var(--accent-green); margin-right:6px;"></i>${escHtml(req.from)}
@@ -3261,7 +3545,10 @@ function buildMonitorCard(req) {
             </div>
             <div style="flex:1;">
                 <div style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">${prog.label}</div>
-                <div style="font-size:11px; color:var(--text-muted);">Request ${req.id} · ${req.date} ${req.time}</div>
+                <div style="font-size:11px; color:var(--text-muted);">Request ${req.id} ${req.driverPhone ? ' · <i class="fab fa-whatsapp" style="color:#10b981"></i> ' + req.driverPhone : ''}</div>
+                <div style="font-size:11px; color:var(--accent-blue); margin-top:4px;">
+                    <i class="fas fa-clock"></i> Expected: ${req.arrivalTiming ? new Date(req.arrivalTiming).toLocaleString('en-GB', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'short'}) : 'ASAP'}
+                </div>
                 ${req.notes ? `<div style="font-size:11px; color:var(--text-muted); font-style:italic; margin-top:4px;">"${escHtml(req.notes)}"</div>` : ''}
             </div>
         </div>
