@@ -117,7 +117,41 @@ async function syncVehicles(dryRun = false) {
     console.log(`Uploaded ${totalUploaded}/${vehicles.length} vehicles...`);
   }
 
-  console.log(`SUCCESS: Upserted all ${totalUploaded} vehicles into 'Vechile_Master'.`);
+  // Check and delete any stale vehicles in DB not present in CSV
+  try {
+    const existingRes = await fetch(`${SUPABASE_URL}/rest/v1/Vechile_Master?select=PLATE NO&limit=1000`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const existingDb = await existingRes.json();
+    const csvPlateSet = new Set(vehicles.map(v => v['PLATE NO']));
+    const staleVehicles = existingDb.filter(v => !csvPlateSet.has(v['PLATE NO']));
+    if (staleVehicles.length > 0) {
+      console.log(`Pruning ${staleVehicles.length} obsolete vehicle(s) not in CSV...`);
+      for (const st of staleVehicles) {
+        await fetch(`${SUPABASE_URL}/rest/v1/Vechile_Master?PLATE%20NO=eq.${encodeURIComponent(st['PLATE NO'])}`, {
+          method: 'DELETE',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+      }
+      console.log(`Pruned ${staleVehicles.length} obsolete vehicles.`);
+    }
+  } catch (pruneErr) {
+    console.warn('Prune notice:', pruneErr.message);
+  }
+
+  // Update local cache files
+  try {
+    const freshRes = await fetch(`${SUPABASE_URL}/rest/v1/Vechile_Master?select=*&limit=1000`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const freshData = await freshRes.json();
+    fs.writeFileSync('vehicle_master.json', JSON.stringify(freshData, null, 2), 'utf8');
+    fs.writeFileSync('vehicle_master_data.js', 'const VEHICLE_MASTER_DATA = ' + JSON.stringify(freshData) + ';', 'utf8');
+    fs.writeFileSync('vehicle_master_data_utf8.js', 'const VEHICLE_MASTER_DATA = ' + JSON.stringify(freshData) + ';', 'utf8');
+    console.log(`Updated local cache files with ${freshData.length} vehicles.`);
+  } catch (cacheErr) {
+    console.warn('Cache update notice:', cacheErr.message);
+  }
 }
 
 async function syncDrivers(dryRun = false) {
