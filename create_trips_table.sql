@@ -1,6 +1,15 @@
 -- SQL Command to create the trips table in Supabase
 -- Run this in your Supabase SQL Editor
 
+-- [!] IF YOU ALREADY CREATED the table, just run this:
+/*
+ALTER TABLE trips 
+ADD COLUMN driver_tip NUMERIC DEFAULT 0,
+ADD COLUMN vehicle_rent NUMERIC DEFAULT 0,
+ADD COLUMN estimated_duration_hrs NUMERIC DEFAULT 2.0,
+ADD COLUMN standard_km NUMERIC DEFAULT 0;
+*/
+
 CREATE TABLE IF NOT EXISTS trips (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     driver_id TEXT NOT NULL,
@@ -17,6 +26,10 @@ CREATE TABLE IF NOT EXISTS trips (
     start_odometer NUMERIC,
     end_odometer NUMERIC,
     rate NUMERIC DEFAULT 0,
+    driver_tip NUMERIC DEFAULT 0,
+    vehicle_rent NUMERIC DEFAULT 0,
+    estimated_duration_hrs NUMERIC DEFAULT 2.0,
+    standard_km NUMERIC DEFAULT 0,
     status TEXT DEFAULT 'In Transit',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

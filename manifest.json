@@ -1,0 +1,16 @@
+{
+  "name": "Fleet Management System",
+  "short_name": "FleetPro",
+  "description": "Comprehensive Fleet Management System",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050811",
+  "theme_color": "#050811",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

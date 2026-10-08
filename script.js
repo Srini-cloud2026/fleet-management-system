@@ -10,7 +10,10 @@ const VALID_DRIVERS = {
 
 const VALID_ADMINS = {
     'EMP-001': { passcode: 'admin123', name: 'Admin User', role: 'super' },
-    'EMP-8705': { passcode: 'admin123', name: 'Super Admin', role: 'super' }
+    'EMP-8705': { passcode: 'admin123', name: 'Super Admin', role: 'super' },
+    '8705': { passcode: 'admin123', name: 'Super Admin', role: 'super' },
+    '3100': { passcode: 'admin123', name: 'Admin User', role: 'super' },
+    'EMP-3100': { passcode: 'admin123', name: 'Admin User', role: 'super' }
 };
 
 // --- Data Variables ---
@@ -156,10 +159,10 @@ async function loadVehicleData() {
             let isForbidden = false;
             
             const baseNames = [
+                'nsgt_trip_rates', 'NSGT_Trip_Rates', 'NSGT Trip Rates', 
                 'Driver_tip_master', 'Driver_trip_master', 'Trip_Rates', 'Trip_Rate', 
                 'Driver_Trip_Master', 'Driver Tip Master', 'driver_trip_master', 
-                'trip_rates', 'TripPrices', 'NSGT_Trip_Rates', 'NSGT Trip Rates', 
-                'Trip_Ticket_Rates', 'trip_ticket_rates', 'Trip_Ticket_Rate'
+                'trip_rates', 'TripPrices', 'Trip_Ticket_Rates', 'trip_ticket_rates', 'Trip_Ticket_Rate'
             ];
             
             const tablesToTry = [...new Set(baseNames.flatMap(t => [t, `"${t}"`]))];
@@ -213,7 +216,11 @@ async function loadVehicleData() {
                 tripTicketRates = ratesData.map(r => ({
                     from: findValue(r, 'from') || findValue(r, 'loc') || 'Unknown',
                     to: findValue(r, 'to') || findValue(r, 'dest') || 'Unknown',
-                    rate: findValue(r, 'rate') || findValue(r, 'price') || 0
+                    rate: findValue(r, 'rate') || findValue(r, 'price') || 0,
+                    tip: findValue(r, 'tip') || findValue(r, 'trip_tip_rate') || 0,
+                    rent: findValue(r, 'rent') || findValue(r, 'vehicle_rent') || 0,
+                    duration: parseFloat(findValue(r, 'duration') || findValue(r, 'standard_duration') || 2.0),
+                    km: parseFloat(findValue(r, 'standard_km') || findValue(r, 'km') || 0)
                 })).filter(r => r.from !== 'Unknown' || r.to !== 'Unknown');
                 
                 console.log(`SUCCESS! Loaded ${tripTicketRates.length} trip rates from ${successTable}.`);
@@ -232,21 +239,25 @@ async function loadVehicleData() {
                 populateLocationDropdowns();
             } else {
                 console.error("Trip Rates: All tables failed.", logs);
-                const dbg = document.createElement('div');
-                dbg.id = 'trip-debug-info';
-                dbg.style = 'color:#f44336; font-size:11px; padding:12px; background: rgba(244,67,54,0.05); border: 2px solid #f44336; border-radius:8px; margin-bottom:15px; font-family: sans-serif;';
+                const errDbg = document.createElement('div');
+                errDbg.id = 'trip-debug-info-err';
+                errDbg.style = 'color:#f44336; font-size:11px; padding:12px; background: rgba(244,67,54,0.05); border: 2px solid #f44336; border-radius:8px; margin-bottom:15px; font-family: sans-serif;';
                 
-                let html = `<strong style="font-size:14px">⚠️ Trip Data Blocked (403 Forbidden)</strong><br>`;
-                html += `<p style="margin:8px 0; font-size:12px">Supabase is denying access to <code>Driver_tip_master</code>. Please run this SQL in your Supabase SQL Editor:</p>`;
-                html += `<pre style="background:#000; color:#0f0; padding:10px; border-radius:4px; font-size:11px; overflow-x:auto;">ALTER TABLE "Driver_tip_master" DISABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE "Driver_tip_master" TO anon, authenticated, service_role;</pre>`;
-                html += `<div style="font-size:10px; color:#666; margin-top:10px; border-top:1px solid #ddd; padding-top:5px;"><strong>Details:</strong><br>${logs.join('<br>')}</div>`;
+                // Try to find which table was forbidden
+                const forbiddenLog = logs.find(l => l.includes('403'));
+                const forbiddenTable = forbiddenLog ? forbiddenLog.split(':')[0].trim().replace(/^"|"$/g, '') : 'nsgt_trip_rates';
+
+                let errHtml = `<strong style="font-size:14px">⚠️ Trip Data Blocked (403 Forbidden)</strong><br>`;
+                errHtml += `<p style="margin:8px 0; font-size:12px">Supabase is denying access to <code>${forbiddenTable}</code>. Please run this SQL in your Supabase SQL Editor to allow the Driver Hub to see pricing/locations:</p>`;
+                errHtml += `<pre style="background:#000; color:#0f0; padding:10px; border-radius:4px; font-size:11px; overflow-x:auto;">ALTER TABLE "${forbiddenTable}" DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE "${forbiddenTable}" TO anon, authenticated, service_role;</pre>`;
+                errHtml += `<div style="font-size:10px; color:#666; margin-top:10px; border-top:1px solid #ddd; padding-top:5px;"><strong>Details:</strong> (Searched ${tablesToTry.length} variations)<br>${logs.slice(0, 10).join('<br>')}...</div>`;
                 
-                dbg.innerHTML = html;
+                errDbg.innerHTML = errHtml;
                 
-                const existingDbg = document.getElementById('trip-debug-info');
-                if (existingDbg) existingDbg.remove();
-                document.getElementById('trip-entry-form')?.prepend(dbg);
+                const existingErrDbg = document.getElementById('trip-debug-info-err');
+                if (existingErrDbg) existingErrDbg.remove();
+                document.getElementById('trip-entry-form')?.prepend(errDbg);
             }
         } catch (err) {
             console.error("Critical Trip Rates Error:", err);
@@ -330,7 +341,7 @@ function switchLoginTab(role) {
     }
 }
 
-function handleLogin(e, role) {
+async function handleLogin(e, role) {
     e.preventDefault();
     let success = false;
 
@@ -352,32 +363,183 @@ function handleLogin(e, role) {
         });
 
         if (vehicle) {
-            const userDisplayName = driverName || 'Driver ' + empId;
+            // --- NEW: Verify Driver exists in Driver_master ---
+            const normalizedInputId = empId.startsWith('EMP-') ? empId : 'EMP-' + empId;
+            
+            const driverFromDb = driverMasterData.find(d => {
+                // Same logic as line 2822 for robustness
+                let ecRaw = getFlexVal(d, "Emp Code") || getFlexVal(d, "Emp_Code") || getFlexVal(d, "ID") || d["Emp Code"] || d["emp_code"] || d["EMP CODE"] || d["Employee Code"];
+                if (!ecRaw) {
+                    const keys = Object.keys(d);
+                    const ecKey = keys.find(k => k.toLowerCase().replace(/[^a-z]/g, '').includes('empcode') || k.toLowerCase().replace(/[^a-z]/g, '').includes('employeeid'));
+                    if (ecKey) ecRaw = d[ecKey];
+                }
+                if (!ecRaw) return false;
+                
+                let ecStr = ecRaw.toString().trim().toUpperCase();
+                if (ecStr && !ecStr.startsWith('EMP-')) ecStr = 'EMP-' + ecStr;
+                return ecStr === normalizedInputId;
+            });
+
+            if (!driverFromDb) {
+                alert(`Access Denied: Employee ID ${normalizedInputId} not found in the Driver Master database.`);
+                return;
+            }
+
+            // Use name from DB if available
+            const dbName = getFlexVal(driverFromDb, "Name") || getFlexVal(driverFromDb, "Employee") || driverFromDb["Employee's Name"];
+            const userDisplayName = dbName || driverName || 'Driver ' + normalizedInputId;
 
             currentUser = {
                 id: truckId,
-                empId: empId,
+                empId: normalizedInputId,
                 name: userDisplayName
             };
             currentRole = 'driver';
             success = true;
             
             // Record access to Supabase
-            recordVehicleAccess(truckId, empId, userDisplayName);
+            recordVehicleAccess(truckId, normalizedInputId, userDisplayName);
+            
+            // Persist driver session so it survives page refresh / network issues
+            localStorage.setItem('driver_session', JSON.stringify(currentUser));
+            // Store active trip ID if there's one already (will be restored later)
             
             document.body.classList.add('mobile-view');
             initDriverHub();
         }
     } else if (role === 'admin') {
-        let empId = document.getElementById('emp-id').value.trim().toUpperCase();
-        if (empId && !empId.startsWith('EMP-')) empId = 'EMP-' + empId;
+        const rawInput = document.getElementById('emp-id').value.trim();
+        const cleanNum = rawInput.replace(/^EMP[-_ ]?/i, '').trim();
+        const prefixedId = 'EMP-' + cleanNum;
+        // Search candidates: matches '8705', 'EMP-8705', case-insensitive variations
+        const candidateIds = Array.from(new Set([
+            rawInput,
+            cleanNum,
+            prefixedId,
+            rawInput.toUpperCase(),
+            cleanNum.toUpperCase(),
+            prefixedId.toUpperCase()
+        ])).filter(Boolean);
+
         const passcode = document.getElementById('admin-passcode').value.trim();
-        if (VALID_ADMINS[empId] && VALID_ADMINS[empId].passcode === passcode) {
-            currentUser = { id: empId, ...VALID_ADMINS[empId] };
-            currentRole = 'admin';
-            success = true;
-            applyRoleUI(currentUser.role);
-            initAdminDashboard();
+        const adminBtn = document.getElementById('admin-login-btn') || (e.target ? e.target.querySelector('button[type="submit"]') : null);
+        const origBtnText = adminBtn ? adminBtn.innerHTML : 'Login to Admin Portal';
+
+        if (adminBtn) {
+            adminBtn.disabled = true;
+            adminBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+        }
+
+        try {
+            let authenticatedAdmin = null;
+
+            // 1. Verify credentials from Supabase 'admin_users' table
+            if (supabaseClient) {
+                try {
+                    const { data: dbAdminList, error: dbErr } = await supabaseClient
+                        .from('admin_users')
+                        .select('*')
+                        .in('emp_id', candidateIds)
+                        .limit(1);
+
+                    const dbAdmin = dbAdminList && dbAdminList.length > 0 ? dbAdminList[0] : null;
+
+                    if (!dbErr && dbAdmin) {
+                        if (dbAdmin.is_active === false) {
+                            alert('This admin account has been deactivated. Please contact an administrator.');
+                            return;
+                        }
+                        if (dbAdmin.password === passcode) {
+                            authenticatedAdmin = {
+                                id: dbAdmin.emp_id,
+                                empId: dbAdmin.emp_id,
+                                name: dbAdmin.name || 'Admin User',
+                                role: dbAdmin.role || 'super',
+                                email: dbAdmin.email || '',
+                                dbId: dbAdmin.id
+                            };
+                            // Update last_login timestamp in background
+                            supabaseClient
+                                .from('admin_users')
+                                .update({ last_login: new Date().toISOString() })
+                                .eq('id', dbAdmin.id)
+                                .then(() => {});
+                        } else {
+                            alert('Invalid password. Please check your credentials.');
+                            return;
+                        }
+                    } else if (dbErr) {
+                        console.warn("DB admin query notice:", dbErr.message || dbErr);
+                    }
+                } catch (dbEx) {
+                    console.warn("admin_users query exception:", dbEx);
+                }
+            }
+
+            // 2. Direct REST fallback if client was not ready but table exists
+            if (!authenticatedAdmin && SUPABASE_URL && SUPABASE_KEY) {
+                try {
+                    const inQuery = encodeURIComponent(candidateIds.join(','));
+                    const restResp = await fetch(
+                        `${SUPABASE_URL}/rest/v1/admin_users?emp_id=in.(${inQuery})&select=*&limit=1`,
+                        {
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    if (restResp.ok) {
+                        const users = await restResp.json();
+                        if (users && users.length > 0) {
+                            const dbAdmin = users[0];
+                            if (dbAdmin.is_active === false) {
+                                alert('This admin account has been deactivated.');
+                                return;
+                            }
+                            if (dbAdmin.password === passcode) {
+                                authenticatedAdmin = {
+                                    id: dbAdmin.emp_id,
+                                    empId: dbAdmin.emp_id,
+                                    name: dbAdmin.name || 'Admin User',
+                                    role: dbAdmin.role || 'super',
+                                    email: dbAdmin.email || '',
+                                    dbId: dbAdmin.id
+                                };
+                            } else {
+                                alert('Invalid password. Please check your credentials.');
+                                return;
+                            }
+                        }
+                    }
+                } catch (restEx) {
+                    console.warn("admin_users REST fallback exception:", restEx);
+                }
+            }
+
+            // 3. Fallback to local VALID_ADMINS if table has not been created yet in Supabase
+            if (!authenticatedAdmin) {
+                const matchedLocalKey = candidateIds.find(c => VALID_ADMINS[c]);
+                if (matchedLocalKey && VALID_ADMINS[matchedLocalKey].passcode === passcode) {
+                    console.log("Logged in using local fallback admin credentials.");
+                    authenticatedAdmin = { id: matchedLocalKey, ...VALID_ADMINS[matchedLocalKey] };
+                }
+            }
+
+            if (authenticatedAdmin) {
+                currentUser = authenticatedAdmin;
+                currentRole = 'admin';
+                success = true;
+                applyRoleUI(currentUser.role);
+                initAdminDashboard();
+            }
+        } finally {
+            if (adminBtn) {
+                adminBtn.disabled = false;
+                adminBtn.innerHTML = origBtnText;
+            }
         }
     }
 
@@ -385,9 +547,64 @@ function handleLogin(e, role) {
         document.getElementById('login-overlay').classList.remove('active');
         document.getElementById('app-container').style.display = 'flex';
         // Update topbar user avatar letter
-        document.querySelector('.user-avatar').textContent = currentUser.name.charAt(0);
+        const avatar = document.querySelector('.user-avatar');
+        if (avatar) avatar.textContent = currentUser.name.charAt(0);
     } else {
         alert('Invalid credentials or vehicle not found. Please try again.');
+    }
+}
+
+// Called when user clicks the avatar/username in top-right
+function showLogoutConfirm() {
+    if (!currentUser) return;
+    const confirmed = confirm(`Logged in as: ${currentUser.name}\n\nAre you sure you want to log out?`);
+    if (confirmed) logout();
+}
+
+// Attempt to restore driver session from localStorage on page load
+function tryRestoreDriverSession() {
+    const saved = localStorage.getItem('driver_session');
+    if (!saved) return false;
+    try {
+        const user = JSON.parse(saved);
+        if (!user || !user.id || !user.empId) return false;
+        
+        currentUser = user;
+        currentRole = 'driver';
+        
+        // Restore active trip ID if saved
+        const savedTripId = localStorage.getItem('active_trip_id');
+        if (savedTripId) {
+            activeTripId = savedTripId;
+            // Also try to recover start time
+            const savedStartTime = localStorage.getItem('active_trip_start_time');
+            if (savedStartTime) window._activeTripStartTime = new Date(savedStartTime);
+            const savedDuration = localStorage.getItem('active_trip_duration');
+            if (savedDuration) window._activeTripTargetDuration = parseFloat(savedDuration);
+        }
+        
+        // Show driver hub
+        document.getElementById('login-overlay')?.classList.remove('active');
+        document.getElementById('app-container').style.display = 'flex';
+        document.body.classList.add('mobile-view');
+        initDriverHub();
+        
+        // Update UI to reflect running trip if it exists
+        if (activeTripId) {
+            const startBtn = document.getElementById('btn-start-trip');
+            const stopBtn = document.getElementById('btn-stop-trip');
+            const badge = document.getElementById('driver-status-badge');
+            if (startBtn) startBtn.style.display = 'none';
+            if (stopBtn) stopBtn.style.display = 'flex';
+            if (badge) { badge.className = 'driver-status-badge online'; badge.textContent = 'On Trip'; }
+        }
+        
+        console.log('Driver session restored for:', user.name);
+        return true;
+    } catch (e) {
+        console.warn('Failed to restore session:', e);
+        localStorage.removeItem('driver_session');
+        return false;
     }
 }
 
@@ -464,25 +681,103 @@ async function recordVehicleAccess(vehicleId, empId, name) {
     
     try {
         if (!supabaseClient) return;
+
+        // --- Close any existing open sessions for this vehicle first ---
+        // This prevents multiple "Still Active" entries per vehicle
+        const { data: openSessions } = await supabaseClient
+            .from('vehicle_access_logs')
+            .select('id')
+            .eq('vehicle_id', vehicleId)
+            .is('logout_time', null);
+
+        if (openSessions && openSessions.length > 0) {
+            const ids = openSessions.map(s => s.id);
+            await supabaseClient
+                .from('vehicle_access_logs')
+                .update({ logout_time: new Date().toISOString() })
+                .in('id', ids);
+            console.log(`Closed ${ids.length} previous open session(s) for ${vehicleId}.`);
+        }
         
         const { error } = await supabaseClient
             .from('vehicle_access_logs')
-            .insert([
-                { 
-                    vehicle_id: vehicleId, 
-                    employee_id: empId, 
-                    driver_name: name 
-                }
-            ]);
+            .insert([{ 
+                vehicle_id: vehicleId, 
+                employee_id: empId, 
+                driver_name: name,
+                login_time: new Date().toISOString(),
+                logout_time: null
+            }]);
             
         if (error) {
             console.error("Error recording vehicle access:", error);
-            // Fallback: If table doesn't exist, it might fail, but let login proceed
         } else {
             console.log("Vehicle access recorded successfully.");
         }
     } catch (err) {
         console.error("Critical error recording access:", err);
+    }
+}
+
+// Auto-complete trips that are significantly past their ETA (admin tool)
+async function autoCompleteOverdueTrips() {
+    if (!supabaseClient) return;
+    const btn = document.getElementById('btn-force-complete');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; }
+
+    try {
+        // Fetch all trips that are still In Transit
+        const { data: stuckTrips, error } = await supabaseClient
+            .from('trips')
+            .select('id, start_time, end_time, vehicle_id, driver_id')
+            .eq('status', 'In Transit');
+
+        if (error) throw error;
+        if (!stuckTrips || stuckTrips.length === 0) {
+            showToast('No stuck trips found — all trips are up to date.', 'success');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-flag-checkered"></i> Force Complete Overdue'; }
+            return;
+        }
+
+        const now = new Date();
+        const gracePeriodMs = 2 * 60 * 60 * 1000; // 2 hours grace after ETA
+        const overdueIds = [];
+
+        stuckTrips.forEach(trip => {
+            const eta  = trip.end_time   ? new Date(trip.end_time)   : null;
+            const start = trip.start_time ? new Date(trip.start_time) : null;
+            // Overdue if: ETA passed by 2h, OR no ETA but started 8+ hours ago
+            const isOverdue = (eta && (now - eta) > gracePeriodMs) ||
+                              (!eta && start && (now - start) > 8 * 60 * 60 * 1000);
+            if (isOverdue) overdueIds.push(trip.id);
+        });
+
+        if (overdueIds.length === 0) {
+            showToast(`${stuckTrips.length} active trip(s) found but none are past the 2h grace period yet.`, 'info');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-flag-checkered"></i> Force Complete Overdue'; }
+            return;
+        }
+
+        // Mark all overdue trips as Completed
+        const { error: updateError } = await supabaseClient
+            .from('trips')
+            .update({ status: 'Completed', end_time: now.toISOString() })
+            .in('id', overdueIds);
+
+        if (updateError) throw updateError;
+
+        // Also close any open vehicle_access_logs for those trips' vehicles
+        showToast(`✅ Force-completed ${overdueIds.length} overdue trip(s). Refreshing...`, 'success');
+        console.log(`Force-completed trip IDs:`, overdueIds);
+
+        // Refresh the trip monitor
+        setTimeout(() => { loadTripMonitor(); renderTripMonitor(); }, 1500);
+
+    } catch (err) {
+        console.error('autoCompleteOverdueTrips error:', err);
+        showToast('Error completing trips: ' + err.message, 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-flag-checkered"></i> Force Complete Overdue'; }
     }
 }
 
@@ -564,10 +859,309 @@ function initAdminDashboard() {
     renderManpowerTable();
     renderAttendanceTable();
 
+    // Start Realtime Listeners
+    subToVehicleAccess();
+    startTripMonitorSync();
+
     // Start GPS Sync
     startGpsSync();
 
     showSection('dashboard-vehicle');
+}
+
+let accessSub = null;
+let notificationCount = 0;
+
+async function subToVehicleAccess() {
+    if (!supabaseClient) return;
+    console.log("Initializing Admin Event Synchronization...");
+    
+    // Unified polling interval (every 10 seconds)
+    setInterval(async () => {
+        try {
+            // --- 1. SYNC ACCESS LOGS (Logins/Logouts) ---
+            const { data: accessLogs } = await supabaseClient
+                .from('vehicle_access_logs')
+                .select('*')
+                .order('id', { ascending: false })
+                .limit(1);
+
+            if (accessLogs && accessLogs.length > 0) {
+                const latest = accessLogs[0];
+                const lastIn = localStorage.getItem('last_processed_access_id');
+                const lastOut = localStorage.getItem('last_processed_logout_id');
+
+                // Check for NEW Login
+                if (latest.id.toString() !== lastIn) {
+                    localStorage.setItem('last_processed_access_id', latest.id);
+                    if (lastIn !== null) {
+                        const msg = `👤 Driver ${latest.driver_name} logged into ${latest.vehicle_id}`;
+                        showToast(msg, 'info');
+                        addPersistentNotification(msg);
+                    }
+                }
+
+                // Check for Logout update (if logout_time was just filled)
+                if (latest.logout_time && latest.id.toString() !== lastOut) {
+                   localStorage.setItem('last_processed_logout_id', latest.id);
+                   const msg = `👋 Driver ${latest.driver_name} logged out of ${latest.vehicle_id}`;
+                   addPersistentNotification(msg);
+                }
+            }
+
+            // --- 2. SYNC TRIP STARTS ---
+            const { data: newTrips } = await supabaseClient
+                .from('trips')
+                .select('*')
+                .order('id', { ascending: false })
+                .limit(1);
+
+            if (newTrips && newTrips.length > 0) {
+                const trip = newTrips[0];
+                const lastProcessedStart = localStorage.getItem('last_processed_trip_start_id');
+                
+                if (trip.id.toString() !== lastProcessedStart) {
+                    localStorage.setItem('last_processed_trip_start_id', trip.id);
+                    if (lastProcessedStart !== null) {
+                        const msg = `🚀 Trip Started: ${trip.driver_name} (${trip.vehicle_id}) -> ${trip.to_dest}`;
+                        showToast(msg, 'success');
+                        addPersistentNotification(msg);
+                    }
+                }
+            }
+
+            // --- 3. SYNC TRIP COMPLETIONS ---
+            const { data: completedTrips } = await supabaseClient
+                .from('trips')
+                .select('*')
+                .eq('status', 'Completed')
+                .order('updated_at', { ascending: false })
+                .limit(1);
+
+            if (completedTrips && completedTrips.length > 0) {
+                const trip = completedTrips[0];
+                const lastProcessedEnd = localStorage.getItem('last_processed_trip_end_id');
+
+                // Use a unique combination of ID and status for completion tracking
+                const endToken = `${trip.id}_completed`;
+                if (endToken !== lastProcessedEnd) {
+                    localStorage.setItem('last_processed_trip_end_id', endToken);
+                    if (lastProcessedEnd !== null) {
+                        const msg = `✅ Trip Completed: ${trip.driver_name} (${trip.vehicle_id}) reached ${trip.to_dest}`;
+                        showToast(msg, 'success');
+                        addPersistentNotification(msg);
+                    }
+                }
+            }
+
+            // Refresh UI components if viewing active sections
+            if (document.getElementById('trip-monitor-grid')?.offsetParent) {
+                renderTripMonitor();
+            }
+
+        } catch (err) {
+            console.error("Admin Event Sync Error:", err);
+        }
+    }, 10000);
+}
+
+let persistentNotifications = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
+
+function addPersistentNotification(message) {
+    persistentNotifications.unshift({
+        id: Date.now(),
+        message: message,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        read: false
+    });
+    // Keep last 20
+    if (persistentNotifications.length > 20) persistentNotifications.pop();
+    localStorage.setItem('admin_notifications', JSON.stringify(persistentNotifications));
+    updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+    const unreadCount = persistentNotifications.filter(n => !n.read).length;
+    const badge = document.getElementById('bell-count');
+    if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+}
+
+function toggleNotificationCenter() {
+    const dropdown = document.getElementById('notification-dropdown');
+    if (!dropdown) return;
+
+    if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+    } else {
+        renderNotificationList();
+        dropdown.style.display = 'block';
+    }
+}
+
+function renderNotificationList() {
+    const list = document.getElementById('notification-list');
+    if (!list) return;
+
+    if (persistentNotifications.length === 0) {
+        list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">No notifications.</div>';
+        return;
+    }
+
+    list.innerHTML = persistentNotifications.map(n => `
+        <div class="notif-item ${n.read ? '' : 'unread'}" style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:default; position:relative;">
+            <div style="font-size:12.5px; color:var(--text-primary); padding-right:20px;">${n.message}</div>
+            <div style="font-size:10.5px; color:var(--text-muted); margin-top:4px;"><i class="far fa-clock"></i> ${n.time}</div>
+            ${n.read ? '' : `<button onclick="markNotifRead(${n.id})" style="position:absolute; top:12px; right:12px; background:none; border:none; color:var(--accent-blue); font-size:11px; cursor:pointer;" title="Dismiss">Ignore</button>`}
+        </div>
+    `).join('');
+}
+
+function markNotifRead(id) {
+    const notif = persistentNotifications.find(n => n.id === id);
+    if (notif) notif.read = true;
+    localStorage.setItem('admin_notifications', JSON.stringify(persistentNotifications));
+    updateNotificationBadge();
+    renderNotificationList();
+}
+
+function clearAllNotifications() {
+    persistentNotifications = [];
+    localStorage.setItem('admin_notifications', JSON.stringify(persistentNotifications));
+    updateNotificationBadge();
+    renderNotificationList();
+}
+
+function closeNotificationCenter() {
+    const dropdown = document.getElementById('notification-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+// Close when clicking outside
+window.addEventListener('click', (e) => {
+    const center = document.getElementById('bell-notification-btn');
+    const dropdown = document.getElementById('notification-dropdown');
+    if (center && dropdown && !center.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'info' ? 'fa-info-circle' : (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle');
+    
+    toast.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <div class="toast-content">
+            <div class="toast-title">Driver Activity</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 500);
+    }, 5000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+    return container;
+}
+
+let tripMonitorInterval = null;
+function startTripMonitorSync() {
+    if (tripMonitorInterval) clearInterval(tripMonitorInterval);
+    renderTripMonitor();
+    tripMonitorInterval = setInterval(renderTripMonitor, 30000); // Refresh every 30s
+}
+
+async function renderTripMonitor() {
+    const monitorGrid = document.getElementById('trip-monitor-grid');
+    if (!monitorGrid) return;
+
+    try {
+        if (!supabaseClient) return;
+
+        // Fetch active trips
+        const { data: activeTrips, error } = await supabaseClient
+            .from('trips')
+            .select('*')
+            .eq('status', 'In Transit');
+
+        if (error) throw error;
+
+        if (!activeTrips || activeTrips.length === 0) {
+            monitorGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-dim);">No active trips currently.</div>';
+            return;
+        }
+
+        monitorGrid.innerHTML = activeTrips.map(trip => {
+            const startTime = new Date(trip.start_time);
+            const now = new Date();
+            const elapsedHrs = (now - startTime) / (1000 * 60 * 60);
+            const estHrs = trip.estimated_duration_hrs || 2.0;
+            // Cap at 98% for in-transit to distinguish from 100% completion
+            const progress = Math.min(Math.round((elapsedHrs / estHrs) * 100), 98);
+            const isDelayed = elapsedHrs > estHrs;
+            
+            const eta = new Date(startTime.getTime() + estHrs * 3600000);
+            const etaStr = eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div class="kpi-card" 
+                     onclick="showTripGpsDetail('${trip.vehicle_id}')"
+                     style="border-left: 4px solid ${isDelayed ? 'var(--accent-red)' : 'var(--accent-blue)'}; padding: 20px; cursor: pointer; transition: transform 0.2s; position: relative;" 
+                     onmouseover="this.style.transform='translateY(-4px)'" 
+                     onmouseout="this.style.transform='none'">
+                     
+                     <div style="position:absolute; top:8px; right:8px; font-size:10px; color:var(--text-dim); opacity:0.6;">
+                        <i class="fas fa-search-location"></i> Click for GPS
+                     </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                        <span style="font-size:12px; font-weight:600; color:var(--text-dim);">${trip.vehicle_id}</span>
+                        <span class="status-badge ${isDelayed ? 'expired' : 'valid'}" style="font-size:10px;">${isDelayed ? 'DELAYED' : 'ON TIME'}</span>
+                    </div>
+                    <div style="font-size:16px; font-weight:700; margin-bottom:4px;">${trip.from_loc} <i class="fas fa-arrow-right" style="font-size:12px; margin:0 8px; color:var(--text-dim);"></i> ${trip.to_dest}</div>
+                    <div style="font-size:13px; color:var(--text-dim); margin-bottom:16px;"><i class="fas fa-user-circle"></i> ${trip.driver_name ? trip.driver_name + ' · ' : ''}${trip.driver_id}</div>
+                    
+                    <div style="margin-bottom:8px; display:flex; justify-content:space-between; font-size:11px; font-weight:600;">
+                        <span>Progress</span>
+                        <span>${progress}%</span>
+                    </div>
+                    <div style="height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden; margin-bottom:16px;">
+                        <div style="height:100%; width:${progress}%; background:${isDelayed ? 'var(--accent-red)' : 'var(--accent-blue)'}; border-radius:3px;"></div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div style="background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; text-align:center;">
+                            <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px;">Started</div>
+                            <div style="font-size:13px; font-weight:600;">${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; text-align:center;">
+                            <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px;">ETA</div>
+                            <div style="font-size:13px; font-weight:600; color:${isDelayed ? 'var(--accent-red)' : 'var(--accent-green)'};">${etaStr}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Error rendering trip monitor:", err);
+    }
 }
 
 // --- Cartrack GPS Integration ---
@@ -579,8 +1173,8 @@ function initTracker() {
     if (!mapEl) return;
 
     mainMap = L.map('main-map').setView([25.276987, 55.296249], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(mainMap);
     console.log("Tracker Map Initialized.");
     updateRequesterAvailability();
@@ -755,6 +1349,67 @@ function showGpsBreakdownModal(type) {
     modal.classList.add('active');
 }
 
+/**
+ * Shows live GPS details for a trip in a toast and option to view on map.
+ */
+function showTripGpsDetail(vehicleId) {
+    if (!vehicleId) return;
+
+    const panel   = document.getElementById('gps-detail-panel');
+    const title   = document.getElementById('gps-panel-title');
+    const body    = document.getElementById('gps-panel-body');
+    const mapLink = document.getElementById('gps-panel-map-link');
+    if (!panel) { showMonitorCardGps(vehicleId); return; } // fallback
+
+    const normalize = s => (s || "").toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanId = normalize(vehicleId);
+
+    let foundValue = gpsData[vehicleId] || gpsData[cleanId];
+    if (!foundValue) {
+        foundValue = Object.values(gpsData).find(v => {
+            const reg = normalize(v.registration || v.Registration || v.id || "");
+            return reg === cleanId || reg.endsWith(cleanId) || cleanId.endsWith(reg) || reg.includes(cleanId) || cleanId.includes(reg);
+        });
+    }
+
+    if (!foundValue) {
+        const keys = Object.keys(gpsData).slice(0, 6).join(', ') || 'NONE';
+        title.innerHTML = `<i class="fas fa-satellite-dish"></i> GPS: ${vehicleId}`;
+        body.innerHTML  = `<div style="color:#f59e0b; padding:8px 0;">&#128752;&#65039; No live data for this vehicle.<br><small style="opacity:0.7;">Receiving ${Object.keys(gpsData).length} vehicles. Sample IDs: ${keys}</small></div>`;
+        mapLink.style.display = 'none';
+        panel.style.display = 'block';
+        return;
+    }
+
+    const loc      = foundValue.location || {};
+    const lat      = loc.latitude  ? parseFloat(loc.latitude).toFixed(5)  : null;
+    const lng      = loc.longitude ? parseFloat(loc.longitude).toFixed(5) : null;
+    const addr     = loc.position_description || 'Address unavailable';
+    const speed    = Math.round(foundValue.speed || 0);
+    const ignState = foundValue.ignition === 'on' || foundValue.ignition === true;
+    const isMoving = ignState && speed > 0;
+    const statusColor = isMoving ? '#10b981' : (ignState ? '#f59e0b' : '#ef4444');
+    const statusText  = ignState ? (isMoving ? '&#128994; Moving' : '&#128993; Idle — Engine On') : '&#128308; Ignition Off';
+
+    title.innerHTML = `<i class="fas fa-satellite-dish"></i> LIVE GPS: ${vehicleId}`;
+    body.innerHTML = `
+        <div style="margin-bottom:6px;"><i class="fas fa-circle" style="color:${statusColor}; margin-right:6px;"></i><b>Status:</b> ${statusText}</div>
+        <div style="margin-bottom:6px;"><i class="fas fa-tachometer-alt" style="margin-right:6px; color:#94a3b8;"></i><b>Speed:</b> ${speed} km/h</div>
+        <div style="margin-bottom:6px;"><i class="fas fa-map-marker-alt" style="margin-right:6px; color:#94a3b8;"></i><b>Location:</b> ${addr}</div>
+        <div style="font-size:10px; opacity:0.6;">Lat: ${lat || 'N/A'} &nbsp;|&nbsp; Lng: ${lng || 'N/A'}</div>
+    `;
+
+    if (lat && lng) {
+        mapLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
+        mapLink.style.display = 'inline-flex';
+    } else {
+        mapLink.style.display = 'none';
+    }
+
+    panel.style.display = 'block';
+}
+
+
 function startGpsSync() {
     if (gpsSyncInterval) clearInterval(gpsSyncInterval);
     fetchGpsData(); // Initial fetch
@@ -770,8 +1425,8 @@ async function renderVehicleTrack(registration) {
     // Initialize map if it doesn't exist
     if (!trackMap) {
         trackMap = L.map('vehicle-track-map').setView([25.2048, 55.2708], 10); // Center on Dubai
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(trackMap);
     } else {
         // Clear previous layers
@@ -1507,26 +2162,47 @@ async function toggleTrip(start) {
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
         startBtn.disabled = true;
 
-        // 3. Capture Start GPS
+        // 3. Capture Start GPS (High Accuracy)
         let startLat = null, startLng = null;
         try {
             const pos = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                navigator.geolocation.getCurrentPosition(resolve, reject, { 
+                    enableHighAccuracy: true, 
+                    timeout: 10000, 
+                    maximumAge: 0 
+                });
             });
             startLat = pos.coords.latitude;
             startLng = pos.coords.longitude;
-            gpsIndicator.textContent = 'GPS Active (Started)';
+            gpsIndicator.innerHTML = `<i class="fas fa-check-circle" style="color:var(--accent-green)"></i> GPS Captured: ${startLat.toFixed(4)}, ${startLng.toFixed(4)}`;
             gpsCoordsPanel.textContent = `Lat: ${startLat.toFixed(4)} | Lng: ${startLng.toFixed(4)}`;
+            showToast("Trip started. GPS location recorded.", "success");
         } catch (err) {
             console.warn("Browser GPS failed, trying Cartrack data...", err);
             const live = gpsData[currentUser.id];
             if (live && live.location) {
                 startLat = live.location.latitude;
                 startLng = live.location.longitude;
+                gpsIndicator.innerHTML = `<i class="fas fa-satellite" style="color:var(--accent-blue)"></i> GPS via Cartrack`;
+            } else {
+                gpsIndicator.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:var(--accent-orange)"></i> GPS unavailable (Offline)`;
             }
         }
 
-        // 4. Create Trip in Supabase
+        // 4. Find Rate Record and Duration + check trip type
+        const isEmptyTrip = document.getElementById('trip-type-empty')?.checked || false;
+        const rateRecord = tripTicketRates.find(r => 
+            (r.from.toLowerCase() === fromVal.toLowerCase() && r.to.toLowerCase() === toVal.toLowerCase()) ||
+            (r.from.toLowerCase() === toVal.toLowerCase() && r.to.toLowerCase() === fromVal.toLowerCase())
+        );
+        // Empty trip = no billing
+        const startTip    = isEmptyTrip ? 0 : (rateRecord ? rateRecord.tip : 0);
+        const startRent   = isEmptyTrip ? 0 : (rateRecord ? rateRecord.rent : 0);
+        const estDuration = rateRecord ? (rateRecord.duration || 2.0) : 2.0;
+        const stdKm       = rateRecord ? (rateRecord.km || 0) : 0;
+        window._activeTripIsEmpty = isEmptyTrip;
+
+        // 5. Create Trip in Supabase
         try {
             const tripData = {
                 driver_id: currentUser.empId || 'Unknown',
@@ -1537,6 +2213,11 @@ async function toggleTrip(start) {
                 start_lat: startLat,
                 start_lng: startLng,
                 start_odometer: gpsData[currentUser.id]?.odometer || 0,
+                driver_tip: startTip,
+                vehicle_rent: startRent,
+                estimated_duration_hrs: estDuration,
+                standard_km: stdKm,
+                is_empty: isEmptyTrip,
                 status: 'In Transit'
             };
 
@@ -1558,7 +2239,16 @@ async function toggleTrip(start) {
 
             const result = await response.json();
             activeTripId = result[0]?.id;
+            window._activeTripStartTime = new Date(); // Track start time for monitoring
+            window._activeTripTargetDuration = estDuration; // Track target hrs
             console.log("Trip started successfully in Supabase. ID:", activeTripId);
+
+            // Persist trip state to survive page refresh / network interruptions
+            if (activeTripId) {
+                localStorage.setItem('active_trip_id', activeTripId);
+                localStorage.setItem('active_trip_start_time', window._activeTripStartTime.toISOString());
+                localStorage.setItem('active_trip_duration', estDuration.toString());
+            }
 
             // Update UI
             startBtn.style.display = 'none';
@@ -1585,7 +2275,8 @@ async function toggleTrip(start) {
 
         } catch (error) {
             console.error("Critical error starting trip:", error);
-            alert("Could not start trip in database. Please check your connectivity and ensure the 'trips' table exists.");
+            const detail = error.message || "Network error or column mismatch";
+            alert(`Could not start trip in database.\n\nError: ${detail}\n\nTIP: Please run the SQL fix script (final_supabase_fix.sql) in your Supabase SQL editor.`);
             startBtn.disabled = false;
             startBtn.innerHTML = '<i class="fas fa-play"></i> Start Trip';
             return;
@@ -1596,18 +2287,65 @@ async function toggleTrip(start) {
 
     } else {
         // ---- END TRIP ----
+        const fromVal = fromInput.value;
+        const toVal = toInput.value;
+
+        // Monitoring Check: Prevent completion if too early
+        let startTime = window._activeTripStartTime;
+        let targetH = window._activeTripTargetDuration || 2.0;
+
+        // If memory is lost (page refresh), try to recover from database
+        if (!startTime && activeTripId) {
+            try {
+                const resp = await fetch(`${SUPABASE_URL}/rest/v1/trips?id=eq.${activeTripId}&select=created_at,estimated_duration_hrs`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data[0]) {
+                        startTime = new Date(data[0].created_at);
+                        targetH = data[0].estimated_duration_hrs || 2.0;
+                        console.log("Recovered start time from Supabase:", startTime);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to recover trip start time:", e);
+            }
+        }
+
+        const now = new Date();
+        const effectiveStart = startTime || new Date(Date.now() - 60000); // 1m fallback
+        const elapsedS = (now - effectiveStart) / 1000;
+        const elapsedM = elapsedS / 60;
+        const targetM = targetH * 60;
+        
+        // Block if less than 5 minutes (Accidental) OR less than 5% of ETA (Very early stop)
+        // We reduced 10% to 5% to be more lenient for short regional trips
+        if (elapsedM < 5 || (elapsedM < targetM * 0.05)) {
+            const mLeft = Math.round(targetM - elapsedM);
+            const hrsLeft = (mLeft / 60).toFixed(1);
+            alert(`⚠️ PREMATURE COMPLETION DETECTED!\n\nYou just began this trip recently (${Math.round(elapsedM)}m ago).\n\nYou must reach the destination before ending the trip. (Remaining: ~${hrsLeft} hrs).`);
+            return;
+        }
+        
         stopBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ending...';
         stopBtn.disabled = true;
 
-        // 1. Capture End GPS
+        // 1. Capture End GPS (High Accuracy)
         let endLat = null, endLng = null;
         try {
             const pos = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                navigator.geolocation.getCurrentPosition(resolve, reject, { 
+                    enableHighAccuracy: true, 
+                    timeout: 10000, 
+                    maximumAge: 0 
+                });
             });
             endLat = pos.coords.latitude;
             endLng = pos.coords.longitude;
+            showToast("GPS captured for trip completion.", "success");
         } catch (err) {
+            console.warn("Browser GPS failed at end, trying Cartrack data...", err);
             const live = gpsData[currentUser.id];
             if (live && live.location) {
                 endLat = live.location.latitude;
@@ -1615,14 +2353,15 @@ async function toggleTrip(start) {
             }
         }
 
-        // 2. Calculate Rate (Tip)
-        const fromVal = fromInput.value;
-        const toVal = toInput.value;
+        // 2. Lookup finale rates - only apply if not empty trip
+        const isEmptyTrip = window._activeTripIsEmpty || false;
         const rateRecord = tripTicketRates.find(r => 
-            r.from.toLowerCase() === fromVal.toLowerCase() && 
-            r.to.toLowerCase() === toVal.toLowerCase()
+            (r.from.toLowerCase() === fromVal.toLowerCase() && r.to.toLowerCase() === toVal.toLowerCase()) ||
+            (r.from.toLowerCase() === toVal.toLowerCase() && r.to.toLowerCase() === fromVal.toLowerCase())
         );
-        const finalRate = rateRecord ? rateRecord.rate : 0;
+        const finalTip  = isEmptyTrip ? 0 : (rateRecord ? rateRecord.tip : 0);
+        const finalRent = isEmptyTrip ? 0 : (rateRecord ? rateRecord.rent : 0);
+        window._activeTripIsEmpty = false;
 
         // 3. Update Trip in Supabase
         if (activeTripId) {
@@ -1632,7 +2371,8 @@ async function toggleTrip(start) {
                     end_lat: endLat,
                     end_lng: endLng,
                     end_odometer: gpsData[currentUser.id]?.odometer || 0,
-                    rate: finalRate,
+                    driver_tip: finalTip,
+                    vehicle_rent: finalRent,
                     status: 'Completed'
                 };
 
@@ -1645,9 +2385,12 @@ async function toggleTrip(start) {
                     },
                     body: JSON.stringify(updateData)
                 });
-                console.log("Trip marked as completed in Supabase.");
+                activeTripId = null;
             } catch (error) {
                 console.error("Error updating trip record:", error);
+                alert("Could not update trip in database.");
+                stopBtn.disabled = false;
+                stopBtn.innerHTML = '<i class="fas fa-stop"></i> End Trip';
             }
         }
 
@@ -1661,28 +2404,143 @@ async function toggleTrip(start) {
         badge.textContent = 'Offline';
         entryForm.style.display = 'block';
 
-        // Update local logs
         updateStoredTripStatus(currentUser.id, 'completed', 'Completed');
         renderStoredTrips();
 
-        // Clear state
-        activeTripId = null;
         clearInterval(tripInterval);
         gpsIndicator.textContent = 'Tracking stopped.';
         gpsCoordsPanel.textContent = '--- | ---';
         
-        // Show success summary
-        alert(`Trip Completed Successfully!\nRoute: ${fromVal} → ${toVal}\ncalculated Rate: AED ${finalRate}`);
+        alert(`Trip Completed Successfully!\nRoute: ${fromVal} → ${toVal}\nTip: AED ${finalTip}\nVehicle Rent: AED ${finalRent}`);
         
-        // Reset dropdowns
         fromInput.value = '';
         toInput.value = '';
     }
 }
 
-function updateLoadStatus() {
-    // In a real app, this would push to the backend
-    console.log("Load status updated to:", document.getElementById('driver-load-status').value);
+function onTripTypeChange() {
+    const isEmpty = document.getElementById('trip-type-empty')?.checked;
+    const emptyNotice = document.getElementById('empty-trip-notice');
+    const lblLoaded = document.getElementById('lbl-loaded');
+    const lblEmpty  = document.getElementById('lbl-empty');
+    
+    if (emptyNotice) emptyNotice.style.display = isEmpty ? 'block' : 'none';
+    if (lblLoaded) {
+        lblLoaded.style.border   = isEmpty ? '2px solid rgba(255,255,255,0.1)' : '2px solid var(--accent-blue)';
+        lblLoaded.style.background = isEmpty ? 'rgba(255,255,255,0.03)' : 'rgba(59,130,246,0.12)';
+    }
+    if (lblEmpty) {
+        lblEmpty.style.border   = isEmpty ? '2px solid var(--accent-orange)' : '2px solid rgba(255,255,255,0.1)';
+        lblEmpty.style.background = isEmpty ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.03)';
+    }
+}
+
+function switchMonitorTab(tab) {
+    ['active','completed','activity'].forEach(t => {
+        const el = document.getElementById('trip-monitor-' + t);
+        const btn = document.getElementById('mon-tab-' + t);
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+        if (btn) btn.classList.toggle('active', t === tab);
+    });
+    if (tab === 'completed')  loadCompletedTrips();
+    if (tab === 'activity')   loadDriverActivity();
+    if (tab === 'active')     renderTripMonitor();
+}
+
+async function loadCompletedTrips() {
+    const tbody = document.getElementById('completed-trips-tbody');
+    if (!tbody || !supabaseClient) return;
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { data, error } = await supabaseClient
+        .from('trips')
+        .select('*')
+        .eq('status', 'Completed')
+        .gte('start_time', today.toISOString())
+        .order('end_time', { ascending: false });
+    
+    if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">No completed trips today.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = data.map(t => {
+        const startT = t.start_time ? new Date(t.start_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '-';
+        const endT   = t.end_time   ? new Date(t.end_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '-';
+        const isEm   = t.is_empty;
+        return `<tr>
+            <td>${escHtml(t.driver_name || t.driver_id)}</td>
+            <td>${escHtml(t.vehicle_id)}</td>
+            <td>${escHtml(t.from_loc)} → ${escHtml(t.to_dest)}</td>
+            <td>${startT}</td>
+            <td>${endT}</td>
+            <td><span class="status-badge ${isEm?'pending':'valid'}">${isEm?'Empty':'Loaded'}</span></td>
+            <td>${isEm ? '-' : 'AED ' + (t.driver_tip||0)}</td>
+            <td>${isEm ? '-' : 'AED ' + (t.vehicle_rent||0)}</td>
+        </tr>`;
+    }).join('');
+}
+
+async function loadDriverActivity() {
+    const tbody = document.getElementById('driver-activity-tbody');
+    if (!tbody || !supabaseClient) return;
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { data: logs, error } = await supabaseClient
+        .from('vehicle_access_logs')
+        .select('*')
+        .gte('login_time', today.toISOString())
+        .order('login_time', { ascending: false });
+    
+    if (error || !logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No driver activity today.</td></tr>';
+        return;
+    }
+    
+    // Enrich with trip counts per driver session
+    const rows = await Promise.all(logs.map(async log => {
+        let tripCount = 0;
+        const loginTime  = log.login_time  ? new Date(log.login_time)  : new Date(log.created_at);
+        const logoutTime = log.logout_time ? new Date(log.logout_time) : null;
+        
+        // Count completed trips for this driver during the session window
+        let tripQuery = supabaseClient
+            .from('trips')
+            .select('id', { count: 'exact', head: true })
+            .eq('driver_id', log.employee_id)
+            .eq('vehicle_id', log.vehicle_id)
+            .gte('start_time', loginTime.toISOString());
+        if (logoutTime) tripQuery = tripQuery.lte('start_time', logoutTime.toISOString());
+        const { count } = await tripQuery;
+        tripCount = count || 0;
+        
+        const durationMs = logoutTime ? (logoutTime - loginTime) : (new Date() - loginTime);
+        const hrs  = Math.floor(durationMs / 3600000);
+        const mins = Math.floor((durationMs % 3600000) / 60000);
+        
+        // Status Badge for the duration/status column
+        const statusBadge = logoutTime ? 
+            `<span class="status-badge expired" style="font-size:9px; margin-left:4px;">LOGGED OUT</span>` : 
+            `<span class="status-badge valid" style="font-size:9px; margin-left:4px;">ACTIVE</span>`;
+            
+        const durStr = `${hrs}h ${mins}m ${statusBadge}`;
+        
+        return `<tr>
+            <td><div style="display:flex; align-items:center;"><i class="fas fa-user-circle" style="margin-right:8px; color:var(--text-dim);"></i> <b>${escHtml(log.driver_name)}</b></div></td>
+            <td style="color:var(--accent-blue); font-weight:600;">${escHtml(log.vehicle_id)}</td>
+            <td>${loginTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+            <td style="font-weight:500;">${logoutTime ? logoutTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '<span style="color:var(--accent-green); font-weight:600;">Still Active</span>'}</td>
+            <td style="text-align:center; font-weight:700; color:var(--text-primary);">${tripCount}</td>
+            <td>${durStr}</td>
+        </tr>`;
+    }));
+    tbody.innerHTML = rows.join('');
 }
 
 function requestGPS() {
@@ -1708,37 +2566,76 @@ function updateSimulatedGPS() {
 }
 
 // --- Logout ---
-function logout() {
+async function logout() {
+    // 1. Record logout time in Supabase
+    if (currentUser && currentRole === 'driver' && supabaseClient) {
+        try {
+            // Find the most recent access log entry for this driver/vehicle without a logout time
+            const { data: logEntries } = await supabaseClient
+                .from('vehicle_access_logs')
+                .select('id')
+                .eq('vehicle_id', currentUser.id)
+                .eq('employee_id', currentUser.empId)
+                .is('logout_time', null)
+                .order('created_at', { ascending: false })
+                .limit(1);
+            
+            if (logEntries && logEntries.length > 0) {
+                await supabaseClient
+                    .from('vehicle_access_logs')
+                    .update({ logout_time: new Date().toISOString() })
+                    .eq('id', logEntries[0].id);
+                console.log('Logout time recorded.');
+            }
+        } catch (err) {
+            console.error('Error recording logout:', err);
+        }
+    }
+
     document.body.classList.remove('mobile-view');
-    // Clear user data
     currentUser = null;
     currentRole = null;
 
-    // Stop any active trips if driver forgets
+    // Clear persistent driver session from localStorage
+    localStorage.removeItem('driver_session');
+    localStorage.removeItem('active_trip_id');
+    localStorage.removeItem('active_trip_start_time');
+    localStorage.removeItem('active_trip_duration');
+
     if (tripInterval) {
         clearInterval(tripInterval);
-        document.getElementById('gps-indicator').textContent = 'Searching for signal...';
-        document.getElementById('gps-coords').textContent = 'Lat: --- | Lng: ---';
+        if (document.getElementById('gps-indicator')) {
+            document.getElementById('gps-indicator').textContent = 'Searching for signal...';
+            document.getElementById('gps-coords').textContent = 'Lat: --- | Lng: ---';
+        }
     }
+    activeTripId = null;
 
     // Reset driver UI
-    document.getElementById('btn-start-trip').style.display = 'flex';
-    document.getElementById('btn-stop-trip').style.display = 'none';
-    document.getElementById('driver-status-badge').className = 'driver-status-badge offline';
-    document.getElementById('driver-status-badge').textContent = 'Offline';
-    document.getElementById('trip-entry-form').style.display = 'block';
-    document.getElementById('trip-from').value = '';
-    document.getElementById('trip-to').value = '';
+    const startBtn = document.getElementById('btn-start-trip');
+    const stopBtn = document.getElementById('btn-stop-trip');
+    if (startBtn) startBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    const badge = document.getElementById('driver-status-badge');
+    if (badge) { badge.className = 'driver-status-badge offline'; badge.textContent = 'Offline'; }
+    const entryForm = document.getElementById('trip-entry-form');
+    if (entryForm) entryForm.style.display = 'block';
+    const fromSel = document.getElementById('trip-from');
+    const toSel = document.getElementById('trip-to');
+    if (fromSel) fromSel.value = '';
+    if (toSel) toSel.value = '';
+    // Reset trip type back to Loaded
+    const loadedRadio = document.getElementById('trip-type-loaded');
+    if (loadedRadio) { loadedRadio.checked = true; onTripTypeChange(); }
 
-    // Show login screen
     document.getElementById('login-overlay').classList.add('active');
     document.getElementById('app-container').style.display = 'none';
 
     // Reset login forms
-    document.getElementById('truck-id').value = 'T-1045';
-    document.getElementById('driver-passcode').value = '1234';
-    document.getElementById('emp-id').value = 'EMP-001';
-    document.getElementById('admin-passcode').value = 'admin123';
+    document.getElementById('truck-id').value = '';
+    document.getElementById('driver-passcode').value = '';
+    document.getElementById('emp-id').value = '';
+    document.getElementById('admin-passcode').value = '';
 }
 
 // Navigation
@@ -2000,21 +2897,27 @@ function exportTripRates() {
 function populateLocationDropdowns() {
     const fromSelect = document.getElementById('trip-from');
     const toSelect = document.getElementById('trip-to');
-    if (!fromSelect || !toSelect) return;
+    const reqFromSelect = document.getElementById('req-from');
+    const reqToSelect = document.getElementById('req-to');
 
-    // Get unique locations
-    const fromLocs = [...new Set(tripTicketRates.map(r => r.from))].sort();
-    const toLocs = [...new Set(tripTicketRates.map(r => r.to))].sort();
+    // Get unique locations combined from BOTH 'from' and 'to' (Vice Versa support)
+    const allLocs = [...new Set([
+        ...tripTicketRates.map(r => r.from),
+        ...tripTicketRates.map(r => r.to)
+    ])].sort();
 
-    // Populate From
-    fromSelect.innerHTML = '<option value="">Select From Location</option>' + 
-        fromLocs.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+    const optionsHtml = '<option value="">Select Location</option>' + 
+        allLocs.map(loc => `<option value="${loc}">${loc}</option>`).join('');
 
-    // Populate To
-    toSelect.innerHTML = '<option value="">Select To Destination</option>' + 
-        toLocs.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+    // Populate Driver Login Dropdowns
+    if (fromSelect) fromSelect.innerHTML = optionsHtml;
+    if (toSelect) toSelect.innerHTML = optionsHtml;
+
+    // Populate Vehicle Request Section Dropdowns
+    if (reqFromSelect) reqFromSelect.innerHTML = optionsHtml;
+    if (reqToSelect) reqToSelect.innerHTML = optionsHtml;
         
-    console.log("Populated driver location dropdowns.");
+    console.log("Populated location dropdowns (Driver Hub + Vehicle Request).");
 }
 
 // ============ CHART.JS CONFIG ============
@@ -2588,6 +3491,10 @@ function renderAttendanceTable() {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
+    // First try to restore a saved driver session before anything else
+    const sessionRestored = tryRestoreDriverSession();
+    
+    // Always load vehicle data for admin or for driver to have data
     loadVehicleData();
     initVehicleCharts();
     initFinanceCharts();
@@ -3411,15 +4318,30 @@ async function loadTripMonitor() {
                     });
                 });
             } else if (r.assignedVehicle) {
-                // Compatibility with old single records
                 activeTrips.push(r);
             }
         }
     });
 
-    // Update summary strip
     const setMon = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     
+    // --- LIVE counts from Supabase trips table ---
+    let liveInProgress = 0, liveCompleted = 0, liveAssigned = 0;
+    try {
+        if (supabaseClient) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const { data: todayTrips } = await supabaseClient
+                .from('trips')
+                .select('status')
+                .gte('created_at', today.toISOString());
+            if (todayTrips) {
+                liveInProgress = todayTrips.filter(t => t.status === 'In Transit').length;
+                liveCompleted  = todayTrips.filter(t => t.status === 'Completed').length;
+                liveAssigned   = todayTrips.filter(t => t.status === 'Assigned').length;
+            }
+        }
+    } catch (e) { console.warn('KPI fetch error:', e); }
+
     const allAssignedPlates = [];
     requests.forEach(r => {
         if (r.status === 'Assigned' || r.status === 'In Progress') {
@@ -3433,9 +4355,9 @@ async function loadTripMonitor() {
         return p && !allAssignedPlates.includes(p);
     }).length);
 
-    setMon('mon-inprogress', activeTrips.filter(t => t.status === 'In Progress').length);
-    setMon('mon-completed', activeTrips.filter(t => t.status === 'Completed').length);
-    setMon('mon-assigned', activeTrips.filter(t => t.status === 'Assigned').length);
+    setMon('mon-inprogress', liveInProgress || activeTrips.filter(t => t.status === 'In Progress').length);
+    setMon('mon-completed',  liveCompleted  || activeTrips.filter(t => t.status === 'Completed').length);
+    setMon('mon-assigned',   liveAssigned   || activeTrips.filter(t => t.status === 'Assigned').length);
 
     if (!activeTrips.length) {
         // Destroy old charts
@@ -3516,9 +4438,14 @@ function buildMonitorCard(req) {
     const barColor = pct >= 100 ? '#10b981' : pct > 0 ? '#f59e0b' : '#8b5cf6';
     const vehicle = req.assignedVehicle || '—';
     const driver = req.assignedDriver || 'Unassigned';
+    const cardId = 'monitor-card-' + req.id.toString().replace(/[^a-z0-9]/gi, '_');
 
     return `
-    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px; position:relative; overflow:hidden;">
+    <div id="${cardId}" onclick="showMonitorCardGps('${vehicle}')" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px; position:relative; overflow:hidden; cursor:pointer; transition:transform 0.2s, border-color 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='rgba(59,130,246,0.4)'" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255,255,255,0.08)'">
+        <!-- GPS hint -->
+        <div style="position:absolute; top:10px; right:44px; font-size:9px; color:var(--accent-blue); opacity:0.7; display:flex; align-items:center; gap:3px;">
+            <i class="fas fa-satellite-dish"></i> Click for GPS
+        </div>
         <!-- Header -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
             <div>
@@ -3527,7 +4454,7 @@ function buildMonitorCard(req) {
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 ${requestStatusBadge(req.status)}
-                <button onclick="deleteVehicleRequest('${req.originalRequestId || req.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; opacity:0.6; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"><i class="fas fa-trash-alt"></i></button>
+                <button onclick="event.stopPropagation(); deleteVehicleRequest('${req.originalRequestId || req.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; opacity:0.6; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"><i class="fas fa-trash-alt"></i></button>
             </div>
         </div>
 
@@ -3559,175 +4486,73 @@ function buildMonitorCard(req) {
     </div>`;
 }
 
-/* ============================================================
-   GPS START LOCATION ENFORCEMENT
-   GPS_TOLERANCE_METERS — configurable
-   ============================================================ */
-const GPS_TOLERANCE_METERS = 500;
-let gpsValidateMap = null;
-let gpsValidatePassed = false;
-let gpsValidateCallback = null;
-
-function haversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371000; // metres
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+// Global helper so onclick in innerHTML can call this reliably
+function openGpsMap(lat, lng) {
+    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
 }
 
-async function geocodeLocation(address) {
-    try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-        const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-        const data = await res.json();
-        if (data && data[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name };
-    } catch (e) {}
-    return null;
-}
+function showMonitorCardGps(vehicleId) {
+    if (!vehicleId || vehicleId === '\u2014') return;
 
-function openGpsValidation(fromLocation, onSuccess) {
-    gpsValidatePassed = false;
-    gpsValidateCallback = onSuccess;
-    const modal = document.getElementById('gps-validate-modal');
-    if (!modal) { onSuccess?.(); return; }
-    modal.classList.add('active');
+    const panel    = document.getElementById('gps-detail-panel');
+    const title    = document.getElementById('gps-panel-title');
+    const body     = document.getElementById('gps-panel-body');
+    const mapLink  = document.getElementById('gps-panel-map-link');
+    if (!panel) return;
 
-    // Reset UI
-    document.getElementById('gps-validate-status').style.display = 'block';
-    document.getElementById('gps-validate-status').innerHTML = `
-        <i class="fas fa-satellite-dish" style="font-size:40px; color:var(--accent-blue);"></i>
-        <p style="margin-top:12px; color:var(--text-muted);">Acquiring GPS signal for validation…</p>`;
-    document.getElementById('gps-validate-map').style.display = 'none';
-    document.getElementById('gps-validate-result').style.display = 'none';
-    document.getElementById('gps-proceed-btn').disabled = true;
+    const normalize = s => (s || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanId = normalize(vehicleId);
 
-    if (!navigator.geolocation) {
-        document.getElementById('gps-validate-status').innerHTML = `
-            <i class="fas fa-exclamation-triangle" style="font-size:40px; color:var(--accent-orange);"></i>
-            <p style="margin-top:12px; color:var(--text-muted);">GPS not supported on this device. Trip can proceed without location validation.</p>`;
-        document.getElementById('gps-proceed-btn').disabled = false;
-        gpsValidatePassed = true;
+    let foundData = gpsData[vehicleId] || gpsData[cleanId] ||
+        Object.values(gpsData).find(v => {
+            const reg = normalize(v.registration || v.id || '');
+            return reg === cleanId || reg.endsWith(cleanId) || cleanId.endsWith(reg) || reg.includes(cleanId) || cleanId.includes(reg);
+        });
+
+    if (!foundData) {
+        // Show the panel with a "not found" message
+        title.innerHTML = `<i class="fas fa-satellite-dish"></i> GPS: ${vehicleId}`;
+        body.innerHTML  = `<div style="color:#f59e0b; padding:8px 0;">&#128752;&#65039; No live data for this vehicle.<br><small style="opacity:0.7;">GPS refreshes every 60s — try again shortly.</small></div>`;
+        mapLink.style.display = 'none';
+        panel.style.display = 'block';
         return;
     }
 
-    navigator.geolocation.getCurrentPosition(async pos => {
-        const gpsLat = pos.coords.latitude;
-        const gpsLng = pos.coords.longitude;
+    const loc      = foundData.location || {};
+    const lat      = loc.latitude  ? parseFloat(loc.latitude).toFixed(5)  : null;
+    const lng      = loc.longitude ? parseFloat(loc.longitude).toFixed(5) : null;
+    const addr     = loc.position_description || 'Address unavailable';
+    const speed    = Math.round(foundData.speed || 0);
+    const ignState = foundData.ignition === 'on' || foundData.ignition === true;
+    const isMoving = ignState && speed > 0;
+    const statusColor = isMoving ? '#10b981' : (ignState ? '#f59e0b' : '#ef4444');
+    const statusText  = ignState ? (isMoving ? '&#128994; Moving' : '&#128993; Idle — Engine On') : '&#128308; Ignition Off';
 
-        document.getElementById('gps-validate-status').innerHTML = `
-            <i class="fas fa-search-location" style="font-size:32px; color:var(--accent-blue);"></i>
-            <p style="margin-top:10px; color:var(--text-muted);">Geocoding declared location…</p>`;
+    // Update title
+    title.innerHTML = `<i class="fas fa-satellite-dish"></i> LIVE GPS: ${vehicleId}`;
 
-        const declared = await geocodeLocation(fromLocation);
-        const resultEl = document.getElementById('gps-validate-result');
-        resultEl.style.display = 'block';
+    // Update body
+    body.innerHTML = `
+        <div style="margin-bottom:6px;"><i class="fas fa-circle" style="color:${statusColor}; margin-right:6px;"></i><b>Status:</b> ${statusText}</div>
+        <div style="margin-bottom:6px;"><i class="fas fa-tachometer-alt" style="margin-right:6px; color:#94a3b8;"></i><b>Speed:</b> ${speed} km/h</div>
+        <div style="margin-bottom:6px;"><i class="fas fa-map-marker-alt" style="margin-right:6px; color:#94a3b8;"></i><b>Location:</b> ${addr}</div>
+        <div style="font-size:10px; opacity:0.6;">Lat: ${lat || 'N/A'} &nbsp;|&nbsp; Lng: ${lng || 'N/A'}</div>
+    `;
 
-        if (!declared) {
-            // Cannot geocode — allow trip but warn
-            resultEl.innerHTML = `<div style="padding:12px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; color:var(--accent-orange);">
-                <i class="fas fa-exclamation-triangle"></i> Could not geocode the declared location. Location validation skipped.</div>`;
-            document.getElementById('gps-proceed-btn').disabled = false;
-            document.getElementById('gps-validate-status').style.display = 'none';
-            gpsValidatePassed = true;
-            return;
-        }
-
-        const dist = haversineDistance(gpsLat, gpsLng, declared.lat, declared.lng);
-        const distText = dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(1) + ' km';
-        const passed = dist <= GPS_TOLERANCE_METERS;
-        gpsValidatePassed = passed;
-
-        document.getElementById('gps-validate-status').style.display = 'none';
-
-        // Show result
-        if (passed) {
-            resultEl.innerHTML = `<div style="padding:12px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#10b981;">
-                <i class="fas fa-check-circle"></i> <strong>Location Verified!</strong> Your GPS is ${distText} from the declared start location.</div>`;
-            document.getElementById('gps-proceed-btn').disabled = false;
-        } else {
-            resultEl.innerHTML = `<div style="padding:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; color:#ef4444;">
-                <i class="fas fa-times-circle"></i> <strong>Location Mismatch!</strong> Your GPS is ${distText} away from "<em>${escHtml(declared.name?.split(',')[0] || fromLocation)}</em>". You must be within ${GPS_TOLERANCE_METERS}m to start the trip.</div>`;
-            document.getElementById('gps-proceed-btn').disabled = true;
-        }
-
-        // Show mini map
-        const mapContainer = document.getElementById('gps-validate-map');
-        mapContainer.style.display = 'block';
-        if (gpsValidateMap) {
-            gpsValidateMap.remove();
-            gpsValidateMap = null;
-        }
-        setTimeout(() => {
-            gpsValidateMap = L.map('gps-validate-map').setView([gpsLat, gpsLng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(gpsValidateMap);
-
-            // GPS marker (blue)
-            L.circleMarker([gpsLat, gpsLng], { radius: 10, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.8 })
-                .bindPopup('<b>Your GPS Location</b>').addTo(gpsValidateMap);
-
-            // Declared marker (orange/green)
-            L.circleMarker([declared.lat, declared.lng], {
-                radius: 10,
-                color: passed ? '#10b981' : '#ef4444',
-                fillColor: passed ? '#10b981' : '#ef4444',
-                fillOpacity: 0.8
-            }).bindPopup(`<b>Declared: ${escHtml(fromLocation)}</b>`).addTo(gpsValidateMap);
-
-            // Tolerance circle
-            L.circle([declared.lat, declared.lng], {
-                radius: GPS_TOLERANCE_METERS,
-                color: passed ? '#10b981' : '#ef4444',
-                fillOpacity: 0.05,
-                weight: 1
-            }).addTo(gpsValidateMap);
-
-            gpsValidateMap.fitBounds([[gpsLat, gpsLng], [declared.lat, declared.lng]], { padding: [30, 30] });
-            gpsValidateMap.invalidateSize();
-        }, 150);
-
-    }, err => {
-        document.getElementById('gps-validate-status').innerHTML = `
-            <i class="fas fa-times-circle" style="font-size:40px; color:var(--accent-red);"></i>
-            <p style="margin-top:12px; color:var(--accent-red);">GPS permission denied. Please allow location access and try again.</p>`;
-    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-}
-
-function closeGpsValidateModal() {
-    document.getElementById('gps-validate-modal')?.classList.remove('active');
-    if (gpsValidateMap) { gpsValidateMap.remove(); gpsValidateMap = null; }
-}
-
-function proceedAfterGpsValidation() {
-    if (!gpsValidatePassed) return;
-    closeGpsValidateModal();
-    gpsValidateCallback?.();
-}
-
-// Patch toggleTrip to run GPS validation before starting
-const _origToggleTrip = typeof toggleTrip === 'function' ? toggleTrip : null;
-function toggleTrip(isStart) {
-    if (isStart) {
-        const fromEl = document.getElementById('trip-from');
-        const toEl = document.getElementById('trip-to');
-        const from = fromEl ? fromEl.options[fromEl.selectedIndex]?.text : '';
-        const to = toEl ? toEl.options[toEl.selectedIndex]?.text : '';
-        if (!from || from === 'Select From Location') {
-            alert('Please select a From Location before starting the trip.');
-            return;
-        }
-        openGpsValidation(from, () => {
-            if (_origToggleTrip) _origToggleTrip(true);
-        });
+    // Update map link — real anchor href, no JS tricks needed
+    if (lat && lng) {
+        mapLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
+        mapLink.style.display = 'inline-flex';
     } else {
-        if (_origToggleTrip) _origToggleTrip(false);
+        mapLink.style.display = 'none';
     }
+
+    // Show the panel
+    panel.style.display = 'block';
 }
 
+
+/* ============================================================
 /* ============================================================
    TOAST NOTIFICATIONS
    ============================================================ */
@@ -3742,10 +4567,23 @@ function showToast(message, type = 'info') {
     const colors = { success: '#10b981', info: '#3b82f6', error: '#ef4444', warning: '#f59e0b' };
     const icons = { success: 'check-circle', info: 'info-circle', error: 'times-circle', warning: 'exclamation-triangle' };
     const toast = document.createElement('div');
-    toast.style.cssText = `background:rgba(20,24,40,0.95); border:1px solid ${colors[type] || '#3b82f6'}; border-left:4px solid ${colors[type] || '#3b82f6'}; color:#fff; padding:12px 18px; border-radius:10px; font-size:13px; display:flex; align-items:center; gap:10px; min-width:260px; max-width:380px; box-shadow:0 8px 32px rgba(0,0,0,0.5); animation:slideInRight 0.3s ease;`;
-    toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}" style="color:${colors[type]}; flex-shrink:0;"></i>${escHtml(message)}`;
+    toast.style.cssText = `background:rgba(15,18,32,0.98); border:1px solid ${colors[type] || '#3b82f6'}; border-left:4px solid ${colors[type] || '#3b82f6'}; color:#fff; padding:14px 18px; border-radius:12px; font-size:13px; display:flex; align-items:flex-start; gap:10px; min-width:260px; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.6); animation:slideInRight 0.3s ease;`;
+    // Use innerHTML directly (message may contain trusted HTML like GPS detail popup)
+    const iconEl = document.createElement('i');
+    iconEl.className = `fas fa-${icons[type] || 'info-circle'}`;
+    iconEl.style.cssText = `color:${colors[type]}; flex-shrink:0; margin-top:2px;`;
+    const bodyEl = document.createElement('div');
+    bodyEl.style.cssText = 'flex:1; line-height:1.5;';
+    bodyEl.innerHTML = message; // Render HTML, not escaped text
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = 'background:none; border:none; color:rgba(255,255,255,0.4); font-size:18px; cursor:pointer; line-height:1; padding:0; flex-shrink:0;';
+    closeBtn.onclick = () => toast.remove();
+    toast.appendChild(iconEl);
+    toast.appendChild(bodyEl);
+    toast.appendChild(closeBtn);
     toastContainer.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 4000);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 7000);
 }
 
 /* ============================================================

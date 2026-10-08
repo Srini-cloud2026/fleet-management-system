@@ -6,11 +6,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2026-08-28T00:00:00",
-            "VALID DAYS": 164,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-28T00:00:00",
-            "VALID DAYS.1": 195,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 2,
@@ -18,11 +20,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 1999.0,
             "MULKIYA EXP DATE": "2026-08-28T00:00:00",
-            "VALID DAYS": 164,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-28T00:00:00",
-            "VALID DAYS.1": 195,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 4,
@@ -30,11 +34,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-09-03T00:00:00",
-            "VALID DAYS": 170,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-03T00:00:00",
-            "VALID DAYS.1": 200,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 6,
@@ -42,11 +48,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-07-09T00:00:00",
-            "VALID DAYS": 114,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-07T00:00:00",
-            "VALID DAYS.1": 204,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 8,
@@ -54,11 +62,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-09-18T00:00:00",
-            "VALID DAYS": 185,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-18T00:00:00",
-            "VALID DAYS.1": 215,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 10,
@@ -66,11 +76,13 @@
             "VEHICLE TYPE": "TATA",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-09-23T00:00:00",
-            "VALID DAYS": 190,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-23T00:00:00",
-            "VALID DAYS.1": 190,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 11,
@@ -78,11 +90,13 @@
             "VEHICLE TYPE": "TATA",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-09-28T00:00:00",
-            "VALID DAYS": 195,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS.1": 225,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 14,
@@ -90,11 +104,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-10-07T00:00:00",
-            "VALID DAYS": 204,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-07T00:00:00",
-            "VALID DAYS.1": 235,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 16,
@@ -102,11 +118,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2003.0,
             "MULKIYA EXP DATE": "2026-10-02T00:00:00",
-            "VALID DAYS": 199,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-02T00:00:00",
-            "VALID DAYS.1": 230,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 18,
@@ -114,11 +132,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-10-16T00:00:00",
-            "VALID DAYS": 213,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-16T00:00:00",
-            "VALID DAYS.1": 244,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 19,
@@ -126,11 +146,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2026-10-22T00:00:00",
-            "VALID DAYS": 219,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-22T00:00:00",
-            "VALID DAYS.1": 250,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 22,
@@ -138,11 +160,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-11-24T00:00:00",
-            "VALID DAYS": 252,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-24T00:00:00",
-            "VALID DAYS.1": 282,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 23,
@@ -150,11 +174,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-12-07T00:00:00",
-            "VALID DAYS": 265,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-07T00:00:00",
-            "VALID DAYS.1": 296,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 26,
@@ -162,11 +188,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2005.0,
             "MULKIYA EXP DATE": "2027-01-04T00:00:00",
-            "VALID DAYS": 293,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-04T00:00:00",
-            "VALID DAYS.1": 324,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 27,
@@ -174,11 +202,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2027-01-08T00:00:00",
-            "VALID DAYS": 297,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-08T00:00:00",
-            "VALID DAYS.1": 328,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 27,
@@ -186,11 +216,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2027-02-23T00:00:00",
-            "VALID DAYS": 343,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-23T00:00:00",
-            "VALID DAYS.1": 371,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 32,
@@ -198,11 +230,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-11-24T00:00:00",
-            "VALID DAYS": 252,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-24T00:00:00",
-            "VALID DAYS.1": 282,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 34,
@@ -210,11 +244,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 1998.0,
             "MULKIYA EXP DATE": "2027-01-18T00:00:00",
-            "VALID DAYS": 307,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-18T00:00:00",
-            "VALID DAYS.1": 338,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 3,
@@ -222,11 +258,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2022.0,
             "MULKIYA EXP DATE": "2026-09-03T00:00:00",
-            "VALID DAYS": 170,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-03T00:00:00",
-            "VALID DAYS.1": 200,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 5,
@@ -234,11 +272,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-07-09T00:00:00",
-            "VALID DAYS": 114,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-07T00:00:00",
-            "VALID DAYS.1": 204,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 7,
@@ -246,11 +286,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2022.0,
             "MULKIYA EXP DATE": "2026-09-18T00:00:00",
-            "VALID DAYS": 185,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-18T00:00:00",
-            "VALID DAYS.1": 215,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 9,
@@ -258,11 +300,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-09-23T00:00:00",
-            "VALID DAYS": 190,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-23T00:00:00",
-            "VALID DAYS.1": 220,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 12,
@@ -270,11 +314,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-09-28T00:00:00",
-            "VALID DAYS": 195,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS.1": 225,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 13,
@@ -282,11 +328,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-10-07T00:00:00",
-            "VALID DAYS": 204,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-07T00:00:00",
-            "VALID DAYS.1": 235,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 15,
@@ -294,11 +342,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-10-02T00:00:00",
-            "VALID DAYS": 199,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-02T00:00:00",
-            "VALID DAYS.1": 230,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 17,
@@ -306,11 +356,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2020.0,
             "MULKIYA EXP DATE": "2026-10-16T00:00:00",
-            "VALID DAYS": 213,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-16T00:00:00",
-            "VALID DAYS.1": 244,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 20,
@@ -318,11 +370,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2018.0,
             "MULKIYA EXP DATE": "2026-10-22T00:00:00",
-            "VALID DAYS": 219,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-22T00:00:00",
-            "VALID DAYS.1": 250,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 21,
@@ -330,11 +384,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2020.0,
             "MULKIYA EXP DATE": "2026-11-24T00:00:00",
-            "VALID DAYS": 252,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-24T00:00:00",
-            "VALID DAYS.1": 282,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 24,
@@ -342,11 +398,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2022.0,
             "MULKIYA EXP DATE": "2026-12-07T00:00:00",
-            "VALID DAYS": 265,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-07T00:00:00",
-            "VALID DAYS.1": 296,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 25,
@@ -354,11 +412,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2027-01-04T00:00:00",
-            "VALID DAYS": 293,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-04T00:00:00",
-            "VALID DAYS.1": 324,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 28,
@@ -366,11 +426,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-11-23T00:00:00",
-            "VALID DAYS": 251,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-23T00:00:00",
-            "VALID DAYS.1": 281,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 29,
@@ -378,11 +440,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2015.0,
             "MULKIYA EXP DATE": "2026-11-23T00:00:00",
-            "VALID DAYS": 251,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-23T00:00:00",
-            "VALID DAYS.1": 281,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 30,
@@ -390,11 +454,13 @@
             "VEHICLE TYPE": "BOGIE",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-12-03T00:00:00",
-            "VALID DAYS": 261,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-03T00:00:00",
-            "VALID DAYS.1": 292,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Bogie ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 31,
@@ -402,11 +468,13 @@
             "VEHICLE TYPE": "BOGIE",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2026-12-03T00:00:00",
-            "VALID DAYS": 261,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-03T00:00:00",
-            "VALID DAYS.1": 292,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Bogie ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 33,
@@ -414,11 +482,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2027-02-25T00:00:00",
-            "VALID DAYS": 345,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-25T00:00:00",
-            "VALID DAYS.1": 373,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 35,
@@ -426,23 +496,27 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2027-01-18T00:00:00",
-            "VALID DAYS": 307,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-18T00:00:00",
-            "VALID DAYS.1": 338,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 36,
             "PLATE NO": 33184,
             "VEHICLE TYPE": "TRAILER",
-            "MODEL": null,
+            "MODEL": NaN,
             "MULKIYA EXP DATE": "2027-02-01T00:00:00",
-            "VALID DAYS": 321,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-01T00:00:00",
-            "VALID DAYS.1": 349,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "AYAANA"
+            "Account ": "AYAANA",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 1,
@@ -450,11 +524,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2020.0,
             "MULKIYA EXP DATE": "2026-06-09T00:00:00",
-            "VALID DAYS": 84,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-09T00:00:00",
-            "VALID DAYS.1": 114,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 2,
@@ -462,11 +538,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2005.0,
             "MULKIYA EXP DATE": "2026-07-22T00:00:00",
-            "VALID DAYS": 127,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-22T00:00:00",
-            "VALID DAYS.1": 158,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 3,
@@ -474,11 +552,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2018.0,
             "MULKIYA EXP DATE": "2026-07-29T00:00:00",
-            "VALID DAYS": 134,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-29T00:00:00",
-            "VALID DAYS.1": 165,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 4,
@@ -486,11 +566,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2000.0,
             "MULKIYA EXP DATE": "2026-08-14T00:00:00",
-            "VALID DAYS": 150,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-14T00:00:00",
-            "VALID DAYS.1": 181,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 5,
@@ -498,11 +580,13 @@
             "VEHICLE TYPE": "TATA",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-09-21T00:00:00",
-            "VALID DAYS": 188,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-21T00:00:00",
-            "VALID DAYS.1": 218,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 6,
@@ -510,11 +594,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2026-09-21T00:00:00",
-            "VALID DAYS": 188,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-21T00:00:00",
-            "VALID DAYS.1": 218,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 7,
@@ -522,11 +608,13 @@
             "VEHICLE TYPE": "TOYOTA HILUX",
             "MODEL": 2018.0,
             "MULKIYA EXP DATE": "2026-09-08T00:00:00",
-            "VALID DAYS": 175,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-08T00:00:00",
-            "VALID DAYS.1": 205,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 8,
@@ -534,11 +622,13 @@
             "VEHICLE TYPE": "TATA",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-10-15T00:00:00",
-            "VALID DAYS": 212,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-15T00:00:00",
-            "VALID DAYS.1": 243,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 9,
@@ -546,11 +636,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2026-10-15T00:00:00",
-            "VALID DAYS": 212,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-15T00:00:00",
-            "VALID DAYS.1": 243,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 10,
@@ -558,11 +650,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-11-11T00:00:00",
-            "VALID DAYS": 239,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-11T00:00:00",
-            "VALID DAYS.1": 269,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 11,
@@ -570,11 +664,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-11-24T00:00:00",
-            "VALID DAYS": 252,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-24T00:00:00",
-            "VALID DAYS.1": 282,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 12,
@@ -582,11 +678,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2022.0,
             "MULKIYA EXP DATE": "2026-12-09T00:00:00",
-            "VALID DAYS": 267,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-09T00:00:00",
-            "VALID DAYS.1": 298,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 13,
@@ -594,11 +692,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-12-09T00:00:00",
-            "VALID DAYS": 267,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-09T00:00:00",
-            "VALID DAYS.1": 298,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 14,
@@ -606,11 +706,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-12-21T00:00:00",
-            "VALID DAYS": 279,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-21T00:00:00",
-            "VALID DAYS.1": 310,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 15,
@@ -618,11 +720,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-12-21T00:00:00",
-            "VALID DAYS": 279,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-21T00:00:00",
-            "VALID DAYS.1": 310,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 16,
@@ -630,11 +734,13 @@
             "VEHICLE TYPE": "MERCEDES 2038",
             "MODEL": 1993.0,
             "MULKIYA EXP DATE": "2027-02-09T00:00:00",
-            "VALID DAYS": 329,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-09T00:00:00",
-            "VALID DAYS.1": 357,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 17,
@@ -642,11 +748,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2005.0,
             "MULKIYA EXP DATE": "2026-05-21T00:00:00",
-            "VALID DAYS": 65,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-21T00:00:00",
-            "VALID DAYS.1": 96,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 18,
@@ -654,11 +762,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2018.0,
             "MULKIYA EXP DATE": "2026-05-21T00:00:00",
-            "VALID DAYS": 65,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-21T00:00:00",
-            "VALID DAYS.1": 96,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 19,
@@ -666,11 +776,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-05-25T00:00:00",
-            "VALID DAYS": 69,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-25T00:00:00",
-            "VALID DAYS.1": 100,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 20,
@@ -678,11 +790,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2026-09-14T00:00:00",
-            "VALID DAYS": 181,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-14T00:00:00",
-            "VALID DAYS.1": 211,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 21,
@@ -690,11 +804,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2026-09-14T00:00:00",
-            "VALID DAYS": 181,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-14T00:00:00",
-            "VALID DAYS.1": 211,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 22,
@@ -702,11 +818,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2026-11-26T00:00:00",
-            "VALID DAYS": 254,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-26T00:00:00",
-            "VALID DAYS.1": 284,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 23,
@@ -714,11 +832,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-11-18T00:00:00",
-            "VALID DAYS": 246,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-18T00:00:00",
-            "VALID DAYS.1": 276,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 24,
@@ -726,11 +846,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-11-26T00:00:00",
-            "VALID DAYS": 254,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-26T00:00:00",
-            "VALID DAYS.1": 284,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 25,
@@ -738,11 +860,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2027-02-09T00:00:00",
-            "VALID DAYS": 329,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-09T00:00:00",
-            "VALID DAYS.1": 357,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 26,
@@ -750,11 +874,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2027-01-18T00:00:00",
-            "VALID DAYS": 307,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-18T00:00:00",
-            "VALID DAYS.1": 338,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 27,
@@ -762,11 +888,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2015.0,
             "MULKIYA EXP DATE": "2027-02-10T00:00:00",
-            "VALID DAYS": 330,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-10T00:00:00",
-            "VALID DAYS.1": 358,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 28,
@@ -774,11 +902,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2027-02-19T00:00:00",
-            "VALID DAYS": 339,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-19T00:00:00",
-            "VALID DAYS.1": 367,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 29,
@@ -786,11 +916,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-03-17T00:00:00",
-            "VALID DAYS": 0,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-04-17T00:00:00",
-            "VALID DAYS.1": 31,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 30,
@@ -798,11 +930,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-03-24T00:00:00",
-            "VALID DAYS": 7,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-04-24T00:00:00",
-            "VALID DAYS.1": 38,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 31,
@@ -810,11 +944,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-04-08T00:00:00",
-            "VALID DAYS": 22,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-05-08T00:00:00",
-            "VALID DAYS.1": 52,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 32,
@@ -822,11 +958,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-05-01T00:00:00",
-            "VALID DAYS": 45,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-01T00:00:00",
-            "VALID DAYS.1": 76,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 33,
@@ -834,11 +972,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-05-01T00:00:00",
-            "VALID DAYS": 45,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-01T00:00:00",
-            "VALID DAYS.1": 76,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 34,
@@ -846,11 +986,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-05-01T00:00:00",
-            "VALID DAYS": 45,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-01T00:00:00",
-            "VALID DAYS.1": 76,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 35,
@@ -858,11 +1000,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-05-01T00:00:00",
-            "VALID DAYS": 45,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-01T00:00:00",
-            "VALID DAYS.1": 76,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 36,
@@ -870,11 +1014,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-05-07T00:00:00",
-            "VALID DAYS": 51,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-07T00:00:00",
-            "VALID DAYS.1": 82,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 37,
@@ -882,11 +1028,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-05-14T00:00:00",
-            "VALID DAYS": 58,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-14T00:00:00",
-            "VALID DAYS.1": 89,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 38,
@@ -894,11 +1042,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-05-27T00:00:00",
-            "VALID DAYS": 71,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-27T00:00:00",
-            "VALID DAYS.1": 102,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 39,
@@ -906,11 +1056,13 @@
             "VEHICLE TYPE": "ASHOK LEYLAND BUS",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-05-08T00:00:00",
-            "VALID DAYS": 52,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-08T00:00:00",
-            "VALID DAYS.1": 83,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 40,
@@ -918,11 +1070,13 @@
             "VEHICLE TYPE": "ASHOK LEYLAND BUS",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-05-08T00:00:00",
-            "VALID DAYS": 52,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-08T00:00:00",
-            "VALID DAYS.1": 83,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 41,
@@ -930,11 +1084,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-05-27T00:00:00",
-            "VALID DAYS": 71,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-27T00:00:00",
-            "VALID DAYS.1": 102,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 42,
@@ -942,11 +1098,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-05-27T00:00:00",
-            "VALID DAYS": 71,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-27T00:00:00",
-            "VALID DAYS.1": 102,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 43,
@@ -954,11 +1112,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-15T00:00:00",
-            "VALID DAYS": 90,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-15T00:00:00",
-            "VALID DAYS.1": 120,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 44,
@@ -966,11 +1126,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-11T00:00:00",
-            "VALID DAYS": 86,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-11T00:00:00",
-            "VALID DAYS.1": 116,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 45,
@@ -978,11 +1140,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-01T00:00:00",
-            "VALID DAYS": 76,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-01T00:00:00",
-            "VALID DAYS.1": 106,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 46,
@@ -990,11 +1154,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-06-18T00:00:00",
-            "VALID DAYS": 93,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-18T00:00:00",
-            "VALID DAYS.1": 123,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 47,
@@ -1002,11 +1168,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-06-23T00:00:00",
-            "VALID DAYS": 98,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-23T00:00:00",
-            "VALID DAYS.1": 128,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 48,
@@ -1014,11 +1182,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2015.0,
             "MULKIYA EXP DATE": "2026-07-17T00:00:00",
-            "VALID DAYS": 122,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-17T00:00:00",
-            "VALID DAYS.1": 153,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 49,
@@ -1026,11 +1196,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-07-28T00:00:00",
-            "VALID DAYS": 133,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-28T00:00:00",
-            "VALID DAYS.1": 164,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 50,
@@ -1038,11 +1210,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-07-31T00:00:00",
-            "VALID DAYS": 136,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-31T00:00:00",
-            "VALID DAYS.1": 167,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 51,
@@ -1050,11 +1224,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-08-06T00:00:00",
-            "VALID DAYS": 142,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-06T00:00:00",
-            "VALID DAYS.1": 173,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 52,
@@ -1062,11 +1238,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-07-07T00:00:00",
-            "VALID DAYS": 112,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-07T00:00:00",
-            "VALID DAYS.1": 143,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 53,
@@ -1074,11 +1252,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-08-11T00:00:00",
-            "VALID DAYS": 147,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-11T00:00:00",
-            "VALID DAYS.1": 178,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 54,
@@ -1086,11 +1266,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-08-10T00:00:00",
-            "VALID DAYS": 146,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-10T00:00:00",
-            "VALID DAYS.1": 177,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 55,
@@ -1098,11 +1280,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-08-31T00:00:00",
-            "VALID DAYS": 167,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-30T00:00:00",
-            "VALID DAYS.1": 197,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 56,
@@ -1110,11 +1294,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-09-07T00:00:00",
-            "VALID DAYS": 174,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-07T00:00:00",
-            "VALID DAYS.1": 204,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 57,
@@ -1122,11 +1308,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-10-21T00:00:00",
-            "VALID DAYS": 218,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-21T00:00:00",
-            "VALID DAYS.1": 249,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 58,
@@ -1134,11 +1322,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-09-16T00:00:00",
-            "VALID DAYS": 183,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-19T00:00:00",
-            "VALID DAYS.1": 216,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 59,
@@ -1146,11 +1336,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-09-22T00:00:00",
-            "VALID DAYS": 189,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-22T00:00:00",
-            "VALID DAYS.1": 219,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 60,
@@ -1158,11 +1350,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-09-08T00:00:00",
-            "VALID DAYS": 175,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-08T00:00:00",
-            "VALID DAYS.1": 205,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 61,
@@ -1170,11 +1364,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-11-13T00:00:00",
-            "VALID DAYS": 241,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-13T00:00:00",
-            "VALID DAYS.1": 271,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 62,
@@ -1182,11 +1378,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-11-12T00:00:00",
-            "VALID DAYS": 240,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-12T00:00:00",
-            "VALID DAYS.1": 270,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 63,
@@ -1194,11 +1392,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-12-07T00:00:00",
-            "VALID DAYS": 265,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-07T00:00:00",
-            "VALID DAYS.1": 296,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 64,
@@ -1206,11 +1406,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-12-04T00:00:00",
-            "VALID DAYS": 262,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-04T00:00:00",
-            "VALID DAYS.1": 293,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 65,
@@ -1218,11 +1420,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-12-16T00:00:00",
-            "VALID DAYS": 274,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-16T00:00:00",
-            "VALID DAYS.1": 305,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 66,
@@ -1230,11 +1434,13 @@
             "VEHICLE TYPE": "TRAILER BOGIE",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2027-01-18T00:00:00",
-            "VALID DAYS": 307,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-18T00:00:00",
-            "VALID DAYS.1": 338,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Bogie ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 67,
@@ -1242,11 +1448,13 @@
             "VEHICLE TYPE": "TRAILER BOGIE",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2027-01-19T00:00:00",
-            "VALID DAYS": 308,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-19T00:00:00",
-            "VALID DAYS.1": 339,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Bogie ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 68,
@@ -1254,11 +1462,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2027-01-26T00:00:00",
-            "VALID DAYS": 315,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-26T00:00:00",
-            "VALID DAYS.1": 346,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 69,
@@ -1266,11 +1476,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2027-02-01T00:00:00",
-            "VALID DAYS": 321,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-01T00:00:00",
-            "VALID DAYS.1": 349,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Star"
+            "Account ": "Noble Star",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 1,
@@ -1278,11 +1490,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2003.0,
             "MULKIYA EXP DATE": "2026-06-08T00:00:00",
-            "VALID DAYS": 83,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-08T00:00:00",
-            "VALID DAYS.1": 113,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 2,
@@ -1290,11 +1504,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-07-10T00:00:00",
-            "VALID DAYS": 115,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-10T00:00:00",
-            "VALID DAYS.1": 146,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 3,
@@ -1302,11 +1518,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2015.0,
             "MULKIYA EXP DATE": "2026-09-10T00:00:00",
-            "VALID DAYS": 177,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-10T00:00:00",
-            "VALID DAYS.1": 177,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 4,
@@ -1314,11 +1532,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2005.0,
             "MULKIYA EXP DATE": "2026-07-16T00:00:00",
-            "VALID DAYS": 121,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-16T00:00:00",
-            "VALID DAYS.1": 152,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 5,
@@ -1326,11 +1546,13 @@
             "VEHICLE TYPE": "DAEWOO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-07-22T00:00:00",
-            "VALID DAYS": 127,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-22T00:00:00",
-            "VALID DAYS.1": 158,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 6,
@@ -1338,11 +1560,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-07-23T00:00:00",
-            "VALID DAYS": 128,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-23T00:00:00",
-            "VALID DAYS.1": 159,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 7,
@@ -1350,11 +1574,13 @@
             "VEHICLE TYPE": "TATA 4534",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-08-17T00:00:00",
-            "VALID DAYS": 153,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-17T00:00:00",
-            "VALID DAYS.1": 184,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 8,
@@ -1362,11 +1588,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-08-25T00:00:00",
-            "VALID DAYS": 161,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-25T00:00:00",
-            "VALID DAYS.1": 192,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 9,
@@ -1374,11 +1602,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-08-14T00:00:00",
-            "VALID DAYS": 150,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-14T00:00:00",
-            "VALID DAYS.1": 181,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 10,
@@ -1386,11 +1616,13 @@
             "VEHICLE TYPE": "TATA 4534",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-08-31T00:00:00",
-            "VALID DAYS": 167,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-30T00:00:00",
-            "VALID DAYS.1": 197,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 11,
@@ -1398,11 +1630,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2012.0,
             "MULKIYA EXP DATE": "2026-09-08T00:00:00",
-            "VALID DAYS": 175,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-08T00:00:00",
-            "VALID DAYS.1": 205,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 12,
@@ -1410,11 +1644,13 @@
             "VEHICLE TYPE": "TOYOTA HILUX",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-08-13T00:00:00",
-            "VALID DAYS": 149,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-13T00:00:00",
-            "VALID DAYS.1": 180,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 13,
@@ -1422,11 +1658,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 1984.0,
             "MULKIYA EXP DATE": "2025-12-17T00:00:00",
-            "VALID DAYS": -90,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-01-17T00:00:00",
-            "VALID DAYS.1": -59,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 14,
@@ -1434,11 +1672,13 @@
             "VEHICLE TYPE": "NISSAN PATROL",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-10-23T00:00:00",
-            "VALID DAYS": 220,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-23T00:00:00",
-            "VALID DAYS.1": 251,
+            "VALID DAYS.1": NaN,
             "Category ": "Car ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 15,
@@ -1446,11 +1686,13 @@
             "VEHICLE TYPE": "TOYOTA CAMRY",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-12-11T00:00:00",
-            "VALID DAYS": 269,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-11T00:00:00",
-            "VALID DAYS.1": 300,
+            "VALID DAYS.1": NaN,
             "Category ": "Car ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 16,
@@ -1458,11 +1700,13 @@
             "VEHICLE TYPE": "NISSAN PATROLE",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2025-10-24T00:00:00",
-            "VALID DAYS": -144,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2025-11-25T00:00:00",
-            "VALID DAYS.1": -112,
+            "VALID DAYS.1": NaN,
             "Category ": "Car ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 17,
@@ -1470,11 +1714,13 @@
             "VEHICLE TYPE": "JCB",
             "MODEL": 2010.0,
             "MULKIYA EXP DATE": "2027-01-01T00:00:00",
-            "VALID DAYS": 290,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-01T00:00:00",
-            "VALID DAYS.1": 321,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 18,
@@ -1482,11 +1728,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-11-13T00:00:00",
-            "VALID DAYS": 241,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-13T00:00:00",
-            "VALID DAYS.1": 271,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 19,
@@ -1494,11 +1742,13 @@
             "VEHICLE TYPE": "NISSAN 10 TON (Scrap)",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2027-01-04T00:00:00",
-            "VALID DAYS": 293,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-04T00:00:00",
-            "VALID DAYS.1": 324,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 20,
@@ -1506,11 +1756,13 @@
             "VEHICLE TYPE": "TOYOTA HILUX",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2027-01-25T00:00:00",
-            "VALID DAYS": 314,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-25T00:00:00",
-            "VALID DAYS.1": 345,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 21,
@@ -1518,11 +1770,13 @@
             "VEHICLE TYPE": "MITSUBISH 34 seater",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2027-02-18T00:00:00",
-            "VALID DAYS": 338,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-18T00:00:00",
-            "VALID DAYS.1": 366,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 22,
@@ -1530,11 +1784,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-08-03T00:00:00",
-            "VALID DAYS": 139,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-03T00:00:00",
-            "VALID DAYS.1": 170,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 23,
@@ -1542,11 +1798,13 @@
             "VEHICLE TYPE": "TOYOTA HILUX",
             "MODEL": 2020.0,
             "MULKIYA EXP DATE": "2026-03-12T00:00:00",
-            "VALID DAYS": -5,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-04-12T00:00:00",
-            "VALID DAYS.1": 26,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 24,
@@ -1554,11 +1812,13 @@
             "VEHICLE TYPE": "MITSUBISHI L200",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2026-05-05T00:00:00",
-            "VALID DAYS": 49,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-05T00:00:00",
-            "VALID DAYS.1": 80,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Noble Marine"
+            "Account ": "Noble Marine",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 1,
@@ -1566,11 +1826,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2011.0,
             "MULKIYA EXP DATE": "2026-10-20T00:00:00",
-            "VALID DAYS": 217,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-20T00:00:00",
-            "VALID DAYS.1": 248,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer",
-            "Account ": "Geo Foundation"
+            "Account ": "Geo Foundation",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 2,
@@ -1578,11 +1840,13 @@
             "VEHICLE TYPE": "VOLVO",
             "MODEL": 2000.0,
             "MULKIYA EXP DATE": "2026-10-20T00:00:00",
-            "VALID DAYS": 217,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-20T00:00:00",
-            "VALID DAYS.1": 248,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Geo Foundation"
+            "Account ": "Geo Foundation",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 3,
@@ -1590,11 +1854,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2007.0,
             "MULKIYA EXP DATE": "2026-11-20T00:00:00",
-            "VALID DAYS": 248,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-20T00:00:00",
-            "VALID DAYS.1": 278,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Geo Foundation"
+            "Account ": "Geo Foundation",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 4,
@@ -1602,11 +1868,13 @@
             "VEHICLE TYPE": "MERCEDES 1726",
             "MODEL": 1989.0,
             "MULKIYA EXP DATE": "2026-11-20T00:00:00",
-            "VALID DAYS": 248,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-20T00:00:00",
-            "VALID DAYS.1": 278,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Geo Foundation"
+            "Account ": "Geo Foundation",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 5,
@@ -1614,11 +1882,13 @@
             "VEHICLE TYPE": "TATA 4534",
             "MODEL": 2007.0,
             "MULKIYA EXP DATE": "2026-06-08T00:00:00",
-            "VALID DAYS": 83,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-08T00:00:00",
-            "VALID DAYS.1": 113,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Geo Foundation"
+            "Account ": "Geo Foundation",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 6,
@@ -1626,11 +1896,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-15T00:00:00",
-            "VALID DAYS": 90,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-15T00:00:00",
-            "VALID DAYS.1": 120,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Geo Foundation"
+            "Account ": "Geo Foundation",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 1,
@@ -1638,11 +1910,13 @@
             "VEHICLE TYPE": "MITSUBISHI",
             "MODEL": 2015.0,
             "MULKIYA EXP DATE": "2026-10-05T00:00:00",
-            "VALID DAYS": 202,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-05T00:00:00",
-            "VALID DAYS.1": 233,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 1,
@@ -1650,11 +1924,13 @@
             "VEHICLE TYPE": "JCB",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-11-05T00:00:00",
-            "VALID DAYS": 233,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-05T00:00:00",
-            "VALID DAYS.1": 263,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 2,
@@ -1662,11 +1938,13 @@
             "VEHICLE TYPE": "NISSAN 2400",
             "MODEL": 2013.0,
             "MULKIYA EXP DATE": "2026-06-18T00:00:00",
-            "VALID DAYS": 93,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-18T00:00:00",
-            "VALID DAYS.1": 123,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 3,
@@ -1674,11 +1952,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-07-29T00:00:00",
-            "VALID DAYS": 134,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-29T00:00:00",
-            "VALID DAYS.1": 165,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 4,
@@ -1686,11 +1966,13 @@
             "VEHICLE TYPE": "NISSAN KICKS",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-07-16T00:00:00",
-            "VALID DAYS": 121,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-16T00:00:00",
-            "VALID DAYS.1": 152,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 5,
@@ -1698,11 +1980,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2026-08-25T00:00:00",
-            "VALID DAYS": 161,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-25T00:00:00",
-            "VALID DAYS.1": 192,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 6,
@@ -1710,11 +1994,13 @@
             "VEHICLE TYPE": "TATA DAEWOO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-08-27T00:00:00",
-            "VALID DAYS": 163,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-27T00:00:00",
-            "VALID DAYS.1": 194,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 7,
@@ -1722,11 +2008,13 @@
             "VEHICLE TYPE": "NISSAN KICKS",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-08-24T00:00:00",
-            "VALID DAYS": 160,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-24T00:00:00",
-            "VALID DAYS.1": 191,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 8,
@@ -1734,11 +2022,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-09-09T00:00:00",
-            "VALID DAYS": 176,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-09T00:00:00",
-            "VALID DAYS.1": 206,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 9,
@@ -1746,11 +2036,13 @@
             "VEHICLE TYPE": "MITSUBISHI",
             "MODEL": 2008.0,
             "MULKIYA EXP DATE": "2026-09-02T00:00:00",
-            "VALID DAYS": 169,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-02T00:00:00",
-            "VALID DAYS.1": 199,
+            "VALID DAYS.1": NaN,
             "Category ": "Pick up ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 10,
@@ -1758,11 +2050,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-12-23T00:00:00",
-            "VALID DAYS": 281,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-23T00:00:00",
-            "VALID DAYS.1": 312,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 11,
@@ -1770,11 +2064,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-03-05T00:00:00",
-            "VALID DAYS": -12,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-04-05T00:00:00",
-            "VALID DAYS.1": 19,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 12,
@@ -1782,11 +2078,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-03-09T00:00:00",
-            "VALID DAYS": -8,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-04-09T00:00:00",
-            "VALID DAYS.1": 23,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 13,
@@ -1794,11 +2092,13 @@
             "VEHICLE TYPE": "ASHOK LEYLAND",
             "MODEL": 2017.0,
             "MULKIYA EXP DATE": "2026-09-28T00:00:00",
-            "VALID DAYS": 195,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS.1": 225,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 14,
@@ -1806,11 +2106,13 @@
             "VEHICLE TYPE": "HONDA ACCORD",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2026-10-02T00:00:00",
-            "VALID DAYS": 199,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-02T00:00:00",
-            "VALID DAYS.1": 230,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 15,
@@ -1818,11 +2120,13 @@
             "VEHICLE TYPE": "TATA DAEWOO",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS": 225,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-28T00:00:00",
-            "VALID DAYS.1": 256,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer Head ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 16,
@@ -1830,11 +2134,13 @@
             "VEHICLE TYPE": "TRAILER",
             "MODEL": 2006.0,
             "MULKIYA EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS": 225,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-28T00:00:00",
-            "VALID DAYS.1": 256,
+            "VALID DAYS.1": NaN,
             "Category ": "Trailer ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 17,
@@ -1842,11 +2148,13 @@
             "VEHICLE TYPE": "TOYOTA HIACE - Food van",
             "MODEL": 2021.0,
             "MULKIYA EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS": 225,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-28T00:00:00",
-            "VALID DAYS.1": 256,
+            "VALID DAYS.1": NaN,
             "Category ": "VAN ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 18,
@@ -1854,11 +2162,13 @@
             "VEHICLE TYPE": "ASHOK LEYLAND",
             "MODEL": 2018.0,
             "MULKIYA EXP DATE": "2026-10-07T00:00:00",
-            "VALID DAYS": 204,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-07T00:00:00",
-            "VALID DAYS.1": 235,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 19,
@@ -1866,11 +2176,13 @@
             "VEHICLE TYPE": "ASHOK LEYLAND",
             "MODEL": 2016.0,
             "MULKIYA EXP DATE": "2027-02-09T00:00:00",
-            "VALID DAYS": 329,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-09T00:00:00",
-            "VALID DAYS.1": 357,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 20,
@@ -1878,11 +2190,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2019.0,
             "MULKIYA EXP DATE": "2026-06-30T00:00:00",
-            "VALID DAYS": 105,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-30T00:00:00",
-            "VALID DAYS.1": 135,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 21,
@@ -1890,11 +2204,13 @@
             "VEHICLE TYPE": "KOMATSU",
             "MODEL": 2015.0,
             "MULKIYA EXP DATE": "2026-07-16T00:00:00",
-            "VALID DAYS": 121,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-16T00:00:00",
-            "VALID DAYS.1": 152,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 22,
@@ -1902,11 +2218,13 @@
             "VEHICLE TYPE": "HONDA CRV",
             "MODEL": 2014.0,
             "MULKIYA EXP DATE": "2027-01-20T00:00:00",
-            "VALID DAYS": 309,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-20T00:00:00",
-            "VALID DAYS.1": 340,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 23,
@@ -1914,11 +2232,13 @@
             "VEHICLE TYPE": "TOYOTA LAND CRUISER",
             "MODEL": 2022.0,
             "MULKIYA EXP DATE": "2027-01-27T00:00:00",
-            "VALID DAYS": 316,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-27T00:00:00",
-            "VALID DAYS.1": 347,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 24,
@@ -1926,11 +2246,13 @@
             "VEHICLE TYPE": "TOYOTA RUSH",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2027-01-27T00:00:00",
-            "VALID DAYS": 316,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-27T00:00:00",
-            "VALID DAYS.1": 347,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 25,
@@ -1938,11 +2260,13 @@
             "VEHICLE TYPE": "TOYOTA LITE ACE - Food van",
             "MODEL": 2023.0,
             "MULKIYA EXP DATE": "2027-01-27T00:00:00",
-            "VALID DAYS": 316,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-02-27T00:00:00",
-            "VALID DAYS.1": 347,
+            "VALID DAYS.1": NaN,
             "Category ": "VAN ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 26,
@@ -1950,11 +2274,13 @@
             "VEHICLE TYPE": "FORKLIFT 3T Electric",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-10-28T00:00:00",
-            "VALID DAYS": 225,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-28T00:00:00",
-            "VALID DAYS.1": 256,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 27,
@@ -1962,11 +2288,13 @@
             "VEHICLE TYPE": "ASHOK LEYLAND",
             "MODEL": 2009.0,
             "MULKIYA EXP DATE": "2026-07-02T00:00:00",
-            "VALID DAYS": 107,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-02T00:00:00",
-            "VALID DAYS.1": 138,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 28,
@@ -1974,11 +2302,13 @@
             "VEHICLE TYPE": "TOYOTA VELOZ",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-06-16T00:00:00",
-            "VALID DAYS": 91,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-16T00:00:00",
-            "VALID DAYS.1": 121,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 29,
@@ -1986,11 +2316,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-10-02T00:00:00",
-            "VALID DAYS": 199,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-02T00:00:00",
-            "VALID DAYS.1": 230,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 30,
@@ -1998,11 +2330,13 @@
             "VEHICLE TYPE": "TOYOTA HIACE - 14 SEATER",
             "MODEL": 2018.0,
             "MULKIYA EXP DATE": "2026-10-22T00:00:00",
-            "VALID DAYS": 219,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-22T00:00:00",
-            "VALID DAYS.1": 250,
+            "VALID DAYS.1": NaN,
             "Category ": "VAN ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 31,
@@ -2010,11 +2344,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-12-28T00:00:00",
-            "VALID DAYS": 286,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-28T00:00:00",
-            "VALID DAYS.1": 317,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 32,
@@ -2022,11 +2358,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-12-24T00:00:00",
-            "VALID DAYS": 282,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-24T00:00:00",
-            "VALID DAYS.1": 313,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 33,
@@ -2034,11 +2372,13 @@
             "VEHICLE TYPE": "TOYOTA VELOZ",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2027-02-12T00:00:00",
-            "VALID DAYS": 332,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-12T00:00:00",
-            "VALID DAYS.1": 360,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 34,
@@ -2046,11 +2386,13 @@
             "VEHICLE TYPE": "MITSUBISHI ROSA",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-03-06T00:00:00",
-            "VALID DAYS": -11,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-04-06T00:00:00",
-            "VALID DAYS.1": 20,
+            "VALID DAYS.1": NaN,
             "Category ": "Bus",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 35,
@@ -2058,11 +2400,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-02-19T00:00:00",
-            "VALID DAYS": -26,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-03-19T00:00:00",
-            "VALID DAYS.1": 2,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 36,
@@ -2070,11 +2414,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2024.0,
             "MULKIYA EXP DATE": "2026-05-05T00:00:00",
-            "VALID DAYS": 49,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-06-05T00:00:00",
-            "VALID DAYS.1": 80,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 37,
@@ -2082,11 +2428,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-15T00:00:00",
-            "VALID DAYS": 90,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-15T00:00:00",
-            "VALID DAYS.1": 120,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 38,
@@ -2094,11 +2442,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-15T00:00:00",
-            "VALID DAYS": 90,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-15T00:00:00",
-            "VALID DAYS.1": 120,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 39,
@@ -2106,11 +2456,13 @@
             "VEHICLE TYPE": "FORKLIFT",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-15T00:00:00",
-            "VALID DAYS": 90,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-15T00:00:00",
-            "VALID DAYS.1": 120,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 40,
@@ -2118,11 +2470,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-16T00:00:00",
-            "VALID DAYS": 91,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-16T00:00:00",
-            "VALID DAYS.1": 121,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 41,
@@ -2130,11 +2484,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-06-16T00:00:00",
-            "VALID DAYS": 91,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-07-16T00:00:00",
-            "VALID DAYS.1": 121,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 42,
@@ -2142,11 +2498,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-07-31T00:00:00",
-            "VALID DAYS": 136,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-31T00:00:00",
-            "VALID DAYS.1": 167,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 43,
@@ -2154,11 +2512,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-07-31T00:00:00",
-            "VALID DAYS": 136,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-08-31T00:00:00",
-            "VALID DAYS.1": 167,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 44,
@@ -2166,11 +2526,13 @@
             "VEHICLE TYPE": "GAC",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2026-08-24T00:00:00",
-            "VALID DAYS": 160,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-09-24T00:00:00",
-            "VALID DAYS.1": 191,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 45,
@@ -2178,11 +2540,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-10-20T00:00:00",
-            "VALID DAYS": 217,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-20T00:00:00",
-            "VALID DAYS.1": 248,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 46,
@@ -2190,11 +2554,13 @@
             "VEHICLE TYPE": "CATERPILLAR DP70",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2026-11-23T00:00:00",
-            "VALID DAYS": 251,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-23T00:00:00",
-            "VALID DAYS.1": 281,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 47,
@@ -2202,11 +2568,13 @@
             "VEHICLE TYPE": "TOYOTA HIACE - Food van",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-11-28T00:00:00",
-            "VALID DAYS": 256,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-12-28T00:00:00",
-            "VALID DAYS.1": 286,
+            "VALID DAYS.1": NaN,
             "Category ": "VAN ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 48,
@@ -2214,11 +2582,13 @@
             "VEHICLE TYPE": "NISSAN SUNNY",
             "MODEL": 2025.0,
             "MULKIYA EXP DATE": "2026-10-20T00:00:00",
-            "VALID DAYS": 217,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2026-11-20T00:00:00",
-            "VALID DAYS.1": 248,
+            "VALID DAYS.1": NaN,
             "Category ": "Car",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 49,
@@ -2226,11 +2596,13 @@
             "VEHICLE TYPE": "CATERPILLAR DP70",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2026-12-24T00:00:00",
-            "VALID DAYS": 282,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-01-24T00:00:00",
-            "VALID DAYS.1": 313,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 50,
@@ -2238,11 +2610,13 @@
             "VEHICLE TYPE": "TOYOTA HIACE - 14 SEATER",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2027-02-01T00:00:00",
-            "VALID DAYS": 321,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-01T00:00:00",
-            "VALID DAYS.1": 349,
+            "VALID DAYS.1": NaN,
             "Category ": "VAN ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 51,
@@ -2250,11 +2624,13 @@
             "VEHICLE TYPE": "CATERPILLAR DP70",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2027-02-23T00:00:00",
-            "VALID DAYS": 343,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-23T00:00:00",
-            "VALID DAYS.1": 371,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 52,
@@ -2262,11 +2638,13 @@
             "VEHICLE TYPE": "CATERPILLAR DP70",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2027-02-23T00:00:00",
-            "VALID DAYS": 343,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-23T00:00:00",
-            "VALID DAYS.1": 371,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
         },
         {
             "S.NO": 53,
@@ -2274,11 +2652,209 @@
             "VEHICLE TYPE": "CATERPILLAR DP70",
             "MODEL": 2026.0,
             "MULKIYA EXP DATE": "2027-02-23T00:00:00",
-            "VALID DAYS": 343,
+            "VALID DAYS": NaN,
             "INSURANCE EXP DATE": "2027-03-23T00:00:00",
-            "VALID DAYS.1": 371,
+            "VALID DAYS.1": NaN,
             "Category ": "Forklift ",
-            "Account ": "Ajmal Steel Br1"
+            "Account ": "Ajmal Steel Br1",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 1,
+            "PLATE NO": "D/62868",
+            "VEHICLE TYPE": "TOYOTA HILUX",
+            "MODEL": 2024.0,
+            "MULKIYA EXP DATE": "2027-01-19T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-02-19T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Pick up ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 2,
+            "PLATE NO": "R/87957",
+            "VEHICLE TYPE": "TOYOTA INNOVA",
+            "MODEL": 2020.0,
+            "MULKIYA EXP DATE": "2027-01-19T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-02-19T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Car",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 3,
+            "PLATE NO": "X/75981",
+            "VEHICLE TYPE": "FORKLIFT",
+            "MODEL": 2013.0,
+            "MULKIYA EXP DATE": "2027-01-22T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-02-22T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Forklift ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 4,
+            "PLATE NO": "E/81545",
+            "VEHICLE TYPE": "JCB",
+            "MODEL": 2009.0,
+            "MULKIYA EXP DATE": "2027-01-27T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-02-27T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Forklift ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 5,
+            "PLATE NO": "FF38994",
+            "VEHICLE TYPE": "Nissan sunny ",
+            "MODEL": 2025.0,
+            "MULKIYA EXP DATE": "2027-01-22T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-02-22T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Car",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 6,
+            "PLATE NO": "W/48594",
+            "VEHICLE TYPE": "JCB",
+            "MODEL": 2012.0,
+            "MULKIYA EXP DATE": "2027-05-17T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-06-17T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Forklift ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 7,
+            "PLATE NO": "W/48593",
+            "VEHICLE TYPE": "JCB",
+            "MODEL": 2012.0,
+            "MULKIYA EXP DATE": "2027-05-17T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-06-17T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Forklift ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 8,
+            "PLATE NO": "C/71039",
+            "VEHICLE TYPE": "TOYOTA - RUSH",
+            "MODEL": 2022.0,
+            "MULKIYA EXP DATE": "2027-06-21T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-07-21T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Car",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 9,
+            "PLATE NO": "Y/26523",
+            "VEHICLE TYPE": "TOYOTA HIACE",
+            "MODEL": 2023.0,
+            "MULKIYA EXP DATE": "2027-06-21T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-07-21T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "VAN ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 10,
+            "PLATE NO": 76661,
+            "VEHICLE TYPE": "Trailer ",
+            "MODEL": 2006.0,
+            "MULKIYA EXP DATE": "2027-07-22T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-08-22T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Trailer ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 11,
+            "PLATE NO": "N/80959",
+            "VEHICLE TYPE": "TATA DAEWOO",
+            "MODEL": 2009.0,
+            "MULKIYA EXP DATE": "2027-07-22T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-08-22T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Trailer Head ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 12,
+            "PLATE NO": "C/99567",
+            "VEHICLE TYPE": "JCB",
+            "MODEL": 2014.0,
+            "MULKIYA EXP DATE": "2027-08-20T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-09-20T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Forklift ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 13,
+            "PLATE NO": "EE 11948",
+            "VEHICLE TYPE": "JCB",
+            "MODEL": 2015.0,
+            "MULKIYA EXP DATE": "2027-06-21T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-07-21T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Forklift ",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
+        },
+        {
+            "S.NO": 14,
+            "PLATE NO": "FF 39012",
+            "VEHICLE TYPE": "Nissan Kick ",
+            "MODEL": 2025.0,
+            "MULKIYA EXP DATE": "2027-01-22T00:00:00",
+            "VALID DAYS": NaN,
+            "INSURANCE EXP DATE": "2027-02-22T00:00:00",
+            "VALID DAYS.1": NaN,
+            "Category ": "Car",
+            "Account ": "Halima Pipe",
+            "Loaction": NaN,
+            "Car Given to": NaN
         }
     ],
     "Drivers Info": [
